@@ -2,187 +2,216 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>日記</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;600&family=Noto+Sans+JP:wght@300;400&display=swap" rel="stylesheet">
-
-<!-- Firebase compat SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-
 <style>
-*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{--bg:#faf9f7;--surface:#fff;--border:#e8e4df;--text:#1a1714;--muted:#9b958e;--accent:#5c4a3a;--accent-light:#f0ebe4;--today:#d4a574;--green:#8fad88;--danger:#c0392b;--streak:#e8611a;--tr:0.14s ease;}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.6;}
 
-:root {
-  --bg:#faf9f7; --surface:#fff; --border:#e8e4df;
-  --text:#1a1714; --muted:#9b958e; --accent:#5c4a3a;
-  --accent-light:#f0ebe4; --today:#d4a574; --green:#8fad88;
-  --danger:#c0392b; --streak:#e8611a; --tr:0.14s ease;
+/* ── Login ── */
+#loginScreen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:999;}
+.login-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:48px 40px;text-align:center;width:320px;box-shadow:0 4px 24px rgba(0,0,0,.07);}
+.login-logo{font-family:'Noto Serif JP',serif;font-weight:600;font-size:30px;color:var(--accent);margin-bottom:6px;}
+.login-sub{color:var(--muted);font-size:13px;margin-bottom:32px;}
+.btn-google{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;padding:12px 20px;border:1px solid var(--border);border-radius:10px;background:var(--surface);font-family:inherit;font-size:14px;color:var(--text);cursor:pointer;transition:all var(--tr);}
+.btn-google:hover{background:var(--accent-light);border-color:var(--accent);}
+.login-error{margin-top:14px;font-size:12px;color:var(--danger);display:none;}
+
+/* ── PC layout ── */
+.pc-app{display:grid;grid-template-columns:272px 1fr;min-height:100vh;}
+.sidebar{background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow:hidden;}
+.sidebar-header{padding:16px 20px 12px;border-bottom:1px solid var(--border);}
+.logo{font-family:'Noto Serif JP',serif;font-weight:600;font-size:19px;letter-spacing:.08em;color:var(--accent);margin-bottom:10px;}
+.user-bar{display:flex;align-items:center;gap:7px;margin-bottom:8px;}
+.user-avatar{width:22px;height:22px;border-radius:50%;object-fit:cover;border:1px solid var(--border);}
+.user-name{font-size:11px;color:var(--muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.btn-logout{background:none;border:none;font-size:11px;color:var(--muted);cursor:pointer;padding:2px 4px;border-radius:4px;transition:color var(--tr);}
+.btn-logout:hover{color:var(--danger);}
+.sync-indicator{display:inline-flex;align-items:center;gap:4px;font-size:10px;color:var(--green);margin-bottom:8px;}
+.sync-dot{width:5px;height:5px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.nav-tabs{display:flex;gap:4px;}
+.nav-tab{flex:1;padding:6px 0;border:1px solid var(--border);border-radius:7px;background:none;font-family:inherit;font-size:12px;color:var(--muted);cursor:pointer;transition:all var(--tr);text-align:center;}
+.nav-tab.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+.nav-tab:hover:not(.active){background:var(--accent-light);color:var(--accent);border-color:var(--accent);}
+.cal-wrap{padding:13px 20px;border-bottom:1px solid var(--border);}
+.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;}
+.cal-title{font-family:'Noto Serif JP',serif;font-size:13px;font-weight:600;}
+.cal-nav{background:none;border:none;cursor:pointer;color:var(--muted);padding:2px 5px;border-radius:5px;font-size:15px;line-height:1;transition:color var(--tr),background var(--tr);}
+.cal-nav:hover{color:var(--accent);background:var(--accent-light);}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;}
+.cal-label{text-align:center;font-size:10px;color:var(--muted);padding:2px 0;}
+.cal-cell{display:flex;flex-direction:column;align-items:center;border-radius:5px;cursor:pointer;transition:background var(--tr);padding:3px 1px;}
+.cal-cell:hover:not(.empty){background:var(--accent-light);}
+.cal-cell.empty{cursor:default;pointer-events:none;}
+.cal-cell.selected{background:var(--accent-light);}
+.cal-cell.selected .cal-num{color:var(--accent);font-weight:700;}
+.cal-num{font-size:12px;color:var(--text);line-height:1.3;}
+.cal-cell.today .cal-num{background:var(--today);color:#fff;font-weight:600;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+.cal-count{font-size:9px;color:var(--muted);min-height:11px;line-height:1;}
+.cal-cell.has-posts .cal-count{color:var(--accent);font-weight:600;}
+.date-panel{flex:1;overflow-y:auto;}
+.date-panel-header{padding:11px 20px 7px;font-size:11px;color:var(--muted);border-bottom:1px solid var(--border);}
+.post-item{display:flex;align-items:flex-start;gap:7px;padding:8px 20px;transition:background var(--tr);}
+.post-item:hover{background:var(--accent-light);}
+.post-item-time{font-size:10px;color:var(--muted);flex-shrink:0;padding-top:2px;min-width:32px;}
+.post-item-body{flex:1;font-size:12px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.post-item-mood{font-size:12px;flex-shrink:0;}
+.post-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:0 2px;opacity:0;transition:opacity var(--tr),color var(--tr);flex-shrink:0;}
+.post-item:hover .post-del{opacity:1;}
+.post-del:hover{color:var(--danger);}
+.no-msg{padding:18px;text-align:center;color:var(--muted);font-size:12px;}
+.main{display:flex;flex-direction:column;}
+.page{display:none;flex:1;flex-direction:column;}
+.page.active{display:flex;}
+.diary-main{flex:1;display:flex;flex-direction:column;padding:30px 48px;max-width:700px;width:100%;margin:0 auto;}
+.diary-date-title{font-family:'Noto Serif JP',serif;font-size:19px;font-weight:600;margin-bottom:18px;}
+.posts-area{flex:1;overflow-y:auto;padding-bottom:10px;}
+.post-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:13px 17px;margin-bottom:8px;}
+.post-card-header{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
+.post-card-time{font-size:11px;color:var(--muted);}
+.post-card-mood{font-size:15px;}
+.post-card-del{margin-left:auto;background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:2px 5px;border-radius:4px;opacity:0;transition:opacity var(--tr),color var(--tr);}
+.post-card:hover .post-card-del{opacity:1;}
+.post-card-del:hover{color:var(--danger);}
+.post-card-body{font-family:'Noto Serif JP',serif;font-size:15px;line-height:1.85;white-space:pre-wrap;font-weight:300;}
+.empty-day{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--muted);padding-bottom:60px;}
+.empty-day .ei{font-size:34px;opacity:.3;}
+.no-day{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--muted);}
+.no-day .ei{font-size:38px;opacity:.25;}
+.composer{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:13px 17px;margin-top:10px;flex-shrink:0;}
+.composer-top{display:flex;align-items:center;gap:6px;margin-bottom:9px;}
+.composer-label{font-size:12px;color:var(--muted);flex:1;}
+.mood-row{display:flex;gap:3px;}
+.mood-btn{background:none;border:1px solid var(--border);border-radius:6px;padding:2px 7px;font-size:13px;cursor:pointer;transition:all var(--tr);}
+.mood-btn:hover,.mood-btn.active{background:var(--accent-light);border-color:var(--accent);}
+.composer textarea{width:100%;border:none;background:transparent;outline:none;resize:none;font-family:'Noto Serif JP',serif;font-size:15px;line-height:1.8;color:var(--text);font-weight:300;min-height:70px;}
+.composer textarea::placeholder{color:#ccc8c2;}
+.composer-footer{display:flex;align-items:center;justify-content:space-between;margin-top:7px;}
+.char-count{font-size:11px;color:var(--muted);}
+.btn-post{padding:8px 20px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:13px;cursor:pointer;transition:opacity var(--tr);}
+.btn-post:hover{opacity:.85;}
+.btn-post:disabled{opacity:.35;cursor:default;}
+.todo-page{flex:1;overflow-y:auto;padding:30px 48px;max-width:700px;width:100%;margin:0 auto;}
+.todo-page-title{font-family:'Noto Serif JP',serif;font-size:20px;font-weight:600;margin-bottom:20px;}
+.section-tabs{display:flex;gap:6px;margin-bottom:18px;border-bottom:1px solid var(--border);}
+.stab{padding:7px 16px;background:none;border:none;font-family:inherit;font-size:13px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all var(--tr);}
+.stab.active{color:var(--accent);border-bottom-color:var(--accent);}
+.stab:hover:not(.active){color:var(--text);}
+.tab-section{display:none;}
+.tab-section.active{display:block;}
+.add-row{display:flex;gap:8px;margin-bottom:14px;}
+.add-input{flex:1;padding:9px 13px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;color:var(--text);background:var(--surface);outline:none;transition:border-color var(--tr);}
+.add-input:focus{border-color:var(--accent);}
+.btn-add{padding:9px 16px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:13px;cursor:pointer;transition:opacity var(--tr);white-space:nowrap;}
+.btn-add:hover{opacity:.85;}
+.habit-item{display:flex;align-items:center;gap:10px;padding:11px 14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;margin-bottom:6px;}
+.habit-check{width:20px;height:20px;border-radius:6px;flex-shrink:0;border:1.5px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;transition:all var(--tr);}
+.habit-check.checked{background:var(--green);border-color:var(--green);}
+.habit-name{flex:1;font-size:13px;}
+.habit-streak{font-size:12px;color:var(--streak);font-weight:600;white-space:nowrap;}
+.item-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:15px;padding:0 3px;opacity:0;transition:opacity var(--tr),color var(--tr);}
+.habit-item:hover .item-del,.task-item:hover .item-del{opacity:1;}
+.item-del:hover{color:var(--danger);}
+.habit-cal-wrap{margin-top:20px;}
+.habit-cal-title{font-size:12px;color:var(--muted);margin-bottom:10px;}
+.habit-select{margin-bottom:10px;padding:6px 10px;border:1px solid var(--border);border-radius:7px;font-family:inherit;font-size:13px;color:var(--text);background:var(--surface);outline:none;cursor:pointer;}
+.habit-month-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
+.hm-label{text-align:center;font-size:10px;color:var(--muted);padding:2px 0;}
+.hm-cell{aspect-ratio:1;border-radius:5px;border:1px solid var(--border);background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--muted);}
+.hm-cell.done{background:var(--green);border-color:var(--green);color:#fff;}
+.hm-cell.empty{border:none;background:transparent;}
+.hm-cell.future{opacity:.3;}
+.task-item{display:flex;align-items:center;gap:10px;padding:11px 14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;margin-bottom:6px;transition:opacity var(--tr);}
+.task-item.done{opacity:.42;}
+.task-check{width:18px;height:18px;border-radius:5px;flex-shrink:0;border:1.5px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;transition:all var(--tr);}
+.task-check.checked{background:var(--green);border-color:var(--green);}
+.task-text{flex:1;font-size:13px;color:var(--text);outline:none;border:none;background:none;font-family:inherit;}
+.task-item.done .task-text{text-decoration:line-through;color:var(--muted);}
+.task-due{font-size:11px;color:var(--muted);white-space:nowrap;flex-shrink:0;}
+.task-due.overdue{color:var(--danger);}
+.task-due-input{font-size:11px;border:1px solid var(--border);border-radius:5px;padding:2px 5px;font-family:inherit;color:var(--text);background:var(--bg);outline:none;cursor:pointer;}
+.section-label{font-size:10px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;margin-bottom:8px;}
+.done-section{margin-top:18px;}
+.empty-section{text-align:center;color:var(--muted);font-size:13px;padding:22px 0;}
+.toast{position:fixed;bottom:22px;right:22px;background:var(--text);color:#fff;padding:10px 17px;border-radius:8px;font-size:13px;opacity:0;transform:translateY(8px);transition:all .2s ease;pointer-events:none;z-index:1000;}
+.toast.show{opacity:1;transform:translateY(0);}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+
+/* ═══ MOBILE ═══ */
+@media(max-width:680px){
+  .pc-app{display:none!important;}
+  #mobileApp{display:flex!important;flex-direction:column;height:100dvh;overflow:hidden;}
+  .m-topbar{display:flex;align-items:center;padding:12px 16px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;padding-top:max(12px,env(safe-area-inset-top));}
+  .m-logo{font-family:'Noto Serif JP',serif;font-weight:600;font-size:17px;color:var(--accent);flex:1;}
+  .m-sync{font-size:10px;color:var(--green);margin:0 8px;}
+  .m-avatar{width:24px;height:24px;border-radius:50%;object-fit:cover;border:1px solid var(--border);}
+  .m-logout{background:none;border:none;font-size:11px;color:var(--muted);cursor:pointer;}
+  .m-page{display:none;flex:1;flex-direction:column;overflow:hidden;min-height:0;}
+  .m-page.active{display:flex;}
+  .m-bottomnav{display:flex;background:var(--surface);border-top:1px solid var(--border);flex-shrink:0;padding-bottom:env(safe-area-inset-bottom);}
+  .m-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:10px 0;background:none;border:none;font-family:inherit;font-size:10px;color:var(--muted);cursor:pointer;transition:color var(--tr);}
+  .m-btn.active{color:var(--accent);}
+  .m-btn-icon{font-size:22px;line-height:1;}
+
+  /* Diary */
+  .m-diary{display:flex;flex-direction:column;flex:1;min-height:0;}
+  .m-cal{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 14px;flex-shrink:0;}
+  .m-cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+  .m-cal-title{font-family:'Noto Serif JP',serif;font-size:13px;font-weight:600;}
+  .m-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
+  .m-cal-label{text-align:center;font-size:10px;color:var(--muted);padding:2px 0;}
+  .m-cal-cell{display:flex;flex-direction:column;align-items:center;border-radius:6px;cursor:pointer;padding:4px 2px;transition:background var(--tr);}
+  .m-cal-cell:hover:not(.empty){background:var(--accent-light);}
+  .m-cal-cell.empty{pointer-events:none;}
+  .m-cal-cell.selected{background:var(--accent-light);}
+  .m-cal-cell.selected .m-cal-num{color:var(--accent);font-weight:700;}
+  .m-cal-num{font-size:12px;color:var(--text);line-height:1.2;}
+  .m-cal-cell.today .m-cal-num{background:var(--today);color:#fff;font-weight:600;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+  .m-cal-count{font-size:9px;color:var(--muted);min-height:11px;}
+  .m-cal-cell.has-posts .m-cal-count{color:var(--accent);font-weight:600;}
+  .m-posts-area{flex:1;overflow-y:auto;padding:10px 14px;min-height:0;}
+  .m-date-label{font-family:'Noto Serif JP',serif;font-size:14px;font-weight:600;margin-bottom:10px;}
+  .m-post-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;}
+  .m-post-header{display:flex;align-items:center;gap:6px;margin-bottom:6px;}
+  .m-post-time{font-size:11px;color:var(--muted);}
+  .m-post-mood{font-size:14px;}
+  .m-post-del{margin-left:auto;background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer;padding:2px 4px;}
+  .m-post-body{font-family:'Noto Serif JP',serif;font-size:14px;line-height:1.8;white-space:pre-wrap;font-weight:300;}
+  .m-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--muted);padding:32px 0;}
+  .m-empty .ei{font-size:32px;opacity:.3;}
+  .m-composer{background:var(--surface);border-top:1px solid var(--border);padding:10px 14px;flex-shrink:0;}
+  .m-mood-row{display:flex;gap:3px;overflow-x:auto;margin-bottom:8px;}
+  .m-mood-row::-webkit-scrollbar{display:none;}
+  .m-textarea{width:100%;border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-family:'Noto Serif JP',serif;font-size:16px;line-height:1.7;color:var(--text);background:var(--bg);outline:none;resize:none;min-height:52px;max-height:120px;font-weight:300;transition:border-color var(--tr);}
+  .m-textarea:focus{border-color:var(--accent);}
+  .m-textarea::placeholder{color:#ccc8c2;}
+  .m-composer-row{display:flex;align-items:center;justify-content:space-between;margin-top:8px;}
+  .m-char{font-size:11px;color:var(--muted);}
+
+  /* TODO mobile */
+  .m-todo-scroll{flex:1;overflow-y:auto;padding:14px 14px 0;min-height:0;}
+  .m-todo-title{font-family:'Noto Serif JP',serif;font-size:18px;font-weight:600;margin-bottom:14px;}
+  .m-stabs{margin-bottom:14px;}
+
+  /* iOS zoom prevention */
+  input,textarea,select{font-size:16px!important;}
 }
-
-body { font-family:'Noto Sans JP',sans-serif; background:var(--bg); color:var(--text); font-size:14px; line-height:1.6; }
-
-/* ── Login screen ── */
-#loginScreen { position:fixed; inset:0; background:var(--bg); display:flex; align-items:center; justify-content:center; z-index:999; }
-.login-card { background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:48px 40px; text-align:center; width:320px; box-shadow:0 4px 24px rgba(0,0,0,0.07); }
-.login-logo { font-family:'Noto Serif JP',serif; font-weight:600; font-size:30px; color:var(--accent); margin-bottom:6px; }
-.login-sub { color:var(--muted); font-size:13px; margin-bottom:32px; }
-.btn-google { width:100%; display:flex; align-items:center; justify-content:center; gap:10px; padding:12px 20px; border:1px solid var(--border); border-radius:10px; background:var(--surface); font-family:inherit; font-size:14px; color:var(--text); cursor:pointer; transition:all var(--tr); }
-.btn-google:hover { background:var(--accent-light); border-color:var(--accent); }
-.login-error { margin-top:14px; font-size:12px; color:var(--danger); display:none; }
-
-/* ── User bar (inside sidebar) ── */
-.user-bar { display:flex; align-items:center; gap:7px; margin-bottom:10px; }
-.user-avatar { width:22px; height:22px; border-radius:50%; object-fit:cover; border:1px solid var(--border); }
-.user-name { font-size:11px; color:var(--muted); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.btn-logout { background:none; border:none; font-size:11px; color:var(--muted); cursor:pointer; padding:2px 4px; border-radius:4px; transition:color var(--tr); }
-.btn-logout:hover { color:var(--danger); }
-.sync-indicator { display:inline-flex; align-items:center; gap:4px; font-size:10px; color:var(--green); margin-bottom:8px; }
-.sync-dot { width:5px; height:5px; border-radius:50%; background:var(--green); animation:pulse 2s infinite; }
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
-
-.app { display:grid; grid-template-columns:272px 1fr; min-height:100vh; }
-
-/* ── Sidebar ── */
-.sidebar { background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; position:sticky; top:0; height:100vh; overflow:hidden; }
-.sidebar-header { padding:16px 20px 12px; border-bottom:1px solid var(--border); }
-.logo { font-family:'Noto Serif JP',serif; font-weight:600; font-size:19px; letter-spacing:.08em; color:var(--accent); margin-bottom:10px; }
-.nav-tabs { display:flex; gap:4px; }
-.nav-tab { flex:1; padding:6px 0; border:1px solid var(--border); border-radius:7px; background:none; font-family:inherit; font-size:12px; color:var(--muted); cursor:pointer; transition:all var(--tr); text-align:center; }
-.nav-tab.active { background:var(--accent); color:#fff; border-color:var(--accent); }
-.nav-tab:hover:not(.active) { background:var(--accent-light); color:var(--accent); border-color:var(--accent); }
-
-/* Calendar */
-.cal-wrap { padding:13px 20px; border-bottom:1px solid var(--border); }
-.cal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:9px; }
-.cal-title { font-family:'Noto Serif JP',serif; font-size:13px; font-weight:600; }
-.cal-nav { background:none; border:none; cursor:pointer; color:var(--muted); padding:2px 5px; border-radius:5px; font-size:15px; line-height:1; transition:color var(--tr),background var(--tr); }
-.cal-nav:hover { color:var(--accent); background:var(--accent-light); }
-.cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:1px; }
-.cal-label { text-align:center; font-size:10px; color:var(--muted); padding:2px 0; }
-.cal-cell { display:flex; flex-direction:column; align-items:center; border-radius:5px; cursor:pointer; transition:background var(--tr); padding:3px 1px; }
-.cal-cell:hover:not(.empty) { background:var(--accent-light); }
-.cal-cell.empty { cursor:default; pointer-events:none; }
-.cal-cell.selected { background:var(--accent-light); }
-.cal-cell.selected .cal-num { color:var(--accent); font-weight:700; }
-.cal-num { font-size:12px; color:var(--text); line-height:1.3; }
-.cal-cell.today .cal-num { background:var(--today); color:#fff; font-weight:600; width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
-.cal-count { font-size:9px; color:var(--muted); min-height:11px; line-height:1; }
-.cal-cell.has-posts .cal-count { color:var(--accent); font-weight:600; }
-
-/* Side post list */
-.date-panel { flex:1; overflow-y:auto; }
-.date-panel-header { padding:11px 20px 7px; font-size:11px; color:var(--muted); border-bottom:1px solid var(--border); }
-.post-item { display:flex; align-items:flex-start; gap:7px; padding:8px 20px; transition:background var(--tr); }
-.post-item:hover { background:var(--accent-light); }
-.post-item-time { font-size:10px; color:var(--muted); flex-shrink:0; padding-top:2px; min-width:32px; }
-.post-item-body { flex:1; font-size:12px; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.post-item-mood { font-size:12px; flex-shrink:0; }
-.post-del { background:none; border:none; color:var(--muted); cursor:pointer; font-size:13px; padding:0 2px; opacity:0; transition:opacity var(--tr),color var(--tr); flex-shrink:0; }
-.post-item:hover .post-del { opacity:1; }
-.post-del:hover { color:var(--danger); }
-.no-msg { padding:18px; text-align:center; color:var(--muted); font-size:12px; }
-
-/* ── Main ── */
-.main { display:flex; flex-direction:column; }
-.page { display:none; flex:1; flex-direction:column; }
-.page.active { display:flex; }
-
-/* Diary main */
-.diary-main { flex:1; display:flex; flex-direction:column; padding:30px 48px; max-width:700px; width:100%; margin:0 auto; }
-.diary-date-title { font-family:'Noto Serif JP',serif; font-size:19px; font-weight:600; margin-bottom:18px; }
-.posts-area { flex:1; overflow-y:auto; padding-bottom:10px; }
-.post-card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:13px 17px; margin-bottom:8px; }
-.post-card-header { display:flex; align-items:center; gap:8px; margin-bottom:7px; }
-.post-card-time { font-size:11px; color:var(--muted); }
-.post-card-mood { font-size:15px; }
-.post-card-del { margin-left:auto; background:none; border:none; color:var(--muted); cursor:pointer; font-size:13px; padding:2px 5px; border-radius:4px; opacity:0; transition:opacity var(--tr),color var(--tr); }
-.post-card:hover .post-card-del { opacity:1; }
-.post-card-del:hover { color:var(--danger); }
-.post-card-body { font-family:'Noto Serif JP',serif; font-size:15px; line-height:1.85; white-space:pre-wrap; font-weight:300; }
-.empty-day { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; color:var(--muted); padding-bottom:60px; }
-.empty-day .ei { font-size:34px; opacity:.3; }
-.no-day { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; color:var(--muted); }
-.no-day .ei { font-size:38px; opacity:.25; }
-
-/* Composer */
-.composer { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:13px 17px; margin-top:10px; flex-shrink:0; }
-.composer-top { display:flex; align-items:center; gap:6px; margin-bottom:9px; }
-.composer-label { font-size:12px; color:var(--muted); flex:1; }
-.mood-row { display:flex; gap:3px; }
-.mood-btn { background:none; border:1px solid var(--border); border-radius:6px; padding:2px 7px; font-size:13px; cursor:pointer; transition:all var(--tr); }
-.mood-btn:hover,.mood-btn.active { background:var(--accent-light); border-color:var(--accent); }
-.composer textarea { width:100%; border:none; background:transparent; outline:none; resize:none; font-family:'Noto Serif JP',serif; font-size:15px; line-height:1.8; color:var(--text); font-weight:300; min-height:70px; }
-.composer textarea::placeholder { color:#ccc8c2; }
-.composer-footer { display:flex; align-items:center; justify-content:space-between; margin-top:7px; }
-.char-count { font-size:11px; color:var(--muted); }
-.btn-post { padding:8px 20px; background:var(--accent); color:#fff; border:none; border-radius:8px; font-family:inherit; font-size:13px; cursor:pointer; transition:opacity var(--tr); }
-.btn-post:hover { opacity:.85; }
-.btn-post:disabled { opacity:.35; cursor:default; }
-
-/* ── TODO page ── */
-.todo-page { flex:1; overflow-y:auto; padding:30px 48px; max-width:700px; width:100%; margin:0 auto; }
-.todo-page-title { font-family:'Noto Serif JP',serif; font-size:20px; font-weight:600; margin-bottom:20px; }
-.section-tabs { display:flex; gap:6px; margin-bottom:18px; border-bottom:1px solid var(--border); }
-.stab { padding:7px 16px; background:none; border:none; font-family:inherit; font-size:13px; color:var(--muted); cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; transition:all var(--tr); }
-.stab.active { color:var(--accent); border-bottom-color:var(--accent); }
-.stab:hover:not(.active) { color:var(--text); }
-.tab-section { display:none; }
-.tab-section.active { display:block; }
-.add-row { display:flex; gap:8px; margin-bottom:14px; }
-.add-input { flex:1; padding:9px 13px; border:1px solid var(--border); border-radius:8px; font-family:inherit; font-size:13px; color:var(--text); background:var(--surface); outline:none; transition:border-color var(--tr); }
-.add-input:focus { border-color:var(--accent); }
-.btn-add { padding:9px 16px; background:var(--accent); color:#fff; border:none; border-radius:8px; font-family:inherit; font-size:13px; cursor:pointer; transition:opacity var(--tr); white-space:nowrap; }
-.btn-add:hover { opacity:.85; }
-
-/* Habits */
-.habit-item { display:flex; align-items:center; gap:10px; padding:11px 14px; background:var(--surface); border:1px solid var(--border); border-radius:8px; margin-bottom:6px; }
-.habit-check { width:20px; height:20px; border-radius:6px; flex-shrink:0; border:1.5px solid var(--border); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:11px; color:#fff; transition:all var(--tr); }
-.habit-check.checked { background:var(--green); border-color:var(--green); }
-.habit-name { flex:1; font-size:13px; }
-.habit-streak { font-size:12px; color:var(--streak); font-weight:600; white-space:nowrap; }
-.item-del { background:none; border:none; color:var(--muted); cursor:pointer; font-size:15px; padding:0 3px; opacity:0; transition:opacity var(--tr),color var(--tr); }
-.habit-item:hover .item-del, .task-item:hover .item-del { opacity:1; }
-.item-del:hover { color:var(--danger); }
-
-/* Habit monthly */
-.habit-cal-wrap { margin-top:20px; }
-.habit-cal-title { font-size:12px; color:var(--muted); margin-bottom:10px; }
-.habit-select { margin-bottom:10px; padding:6px 10px; border:1px solid var(--border); border-radius:7px; font-family:inherit; font-size:13px; color:var(--text); background:var(--surface); outline:none; cursor:pointer; }
-.habit-month-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; }
-.hm-label { text-align:center; font-size:10px; color:var(--muted); padding:2px 0; }
-.hm-cell { aspect-ratio:1; border-radius:5px; border:1px solid var(--border); background:var(--bg); display:flex; align-items:center; justify-content:center; font-size:10px; color:var(--muted); }
-.hm-cell.done { background:var(--green); border-color:var(--green); color:#fff; }
-.hm-cell.empty { border:none; background:transparent; }
-.hm-cell.future { opacity:.3; }
-
-/* Tasks */
-.task-item { display:flex; align-items:center; gap:10px; padding:11px 14px; background:var(--surface); border:1px solid var(--border); border-radius:8px; margin-bottom:6px; transition:opacity var(--tr); }
-.task-item.done { opacity:.42; }
-.task-check { width:18px; height:18px; border-radius:5px; flex-shrink:0; border:1.5px solid var(--border); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:10px; color:#fff; transition:all var(--tr); }
-.task-check.checked { background:var(--green); border-color:var(--green); }
-.task-text { flex:1; font-size:13px; color:var(--text); outline:none; border:none; background:none; font-family:inherit; }
-.task-item.done .task-text { text-decoration:line-through; color:var(--muted); }
-.task-due { font-size:11px; color:var(--muted); white-space:nowrap; flex-shrink:0; }
-.task-due.overdue { color:var(--danger); }
-.task-due-input { font-size:11px; border:1px solid var(--border); border-radius:5px; padding:2px 5px; font-family:inherit; color:var(--text); background:var(--bg); outline:none; cursor:pointer; }
-.section-label { font-size:10px; letter-spacing:.08em; color:var(--muted); text-transform:uppercase; margin-bottom:8px; }
-.done-section { margin-top:18px; }
-.empty-section { text-align:center; color:var(--muted); font-size:13px; padding:22px 0; }
-
-/* Toast */
-.toast { position:fixed; bottom:22px; right:22px; background:var(--text); color:#fff; padding:10px 17px; border-radius:8px; font-size:13px; opacity:0; transform:translateY(8px); transition:all .2s ease; pointer-events:none; z-index:1000; }
-.toast.show { opacity:1; transform:translateY(0); }
-
-::-webkit-scrollbar { width:4px; }
-::-webkit-scrollbar-track { background:transparent; }
-::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+@media(min-width:681px){
+  #mobileApp{display:none!important;}
+}
 </style>
 </head>
 <body>
 
-<!-- ── Login Screen ── -->
+<!-- Login -->
 <div id="loginScreen">
   <div class="login-card">
     <div class="login-logo">日記</div>
@@ -196,19 +225,18 @@ body { font-family:'Noto Sans JP',sans-serif; background:var(--bg); color:var(--
       </svg>
       Googleでログイン
     </button>
-    <div class="login-error" id="loginError">Firebase設定を確認してください</div>
+    <div class="login-error" id="loginError">設定を確認してください</div>
   </div>
 </div>
 
-<!-- ── App ── -->
-<div class="app" id="appWrap" style="display:none">
-
+<!-- ═══ PC ═══ -->
+<div class="pc-app" id="pcApp" style="display:none">
   <aside class="sidebar">
     <div class="sidebar-header">
       <div class="logo">日記</div>
       <div class="user-bar">
-        <img class="user-avatar" id="userAvatar" src="" alt="">
-        <span class="user-name" id="userName"></span>
+        <img class="user-avatar" id="pcAvatar" src="" alt="">
+        <span class="user-name" id="pcName"></span>
         <button class="btn-logout" onclick="doLogout()">ログアウト</button>
       </div>
       <div class="sync-indicator"><div class="sync-dot"></div>同期中</div>
@@ -217,7 +245,6 @@ body { font-family:'Noto Sans JP',sans-serif; background:var(--bg); color:var(--
         <button class="nav-tab"        id="navTodo"  onclick="switchPage('todo')">☑ TODO</button>
       </div>
     </div>
-
     <div class="cal-wrap" id="calWrap">
       <div class="cal-header">
         <button class="cal-nav" onclick="moveCal(-1)">‹</button>
@@ -226,15 +253,12 @@ body { font-family:'Noto Sans JP',sans-serif; background:var(--bg); color:var(--
       </div>
       <div class="cal-grid" id="calGrid"></div>
     </div>
-
     <div class="date-panel" id="datePanel">
       <div class="no-msg" id="noDateMsg">← 日付を選択</div>
       <div id="sidePosts"></div>
     </div>
   </aside>
-
   <main class="main">
-    <!-- Diary -->
     <div class="page active" id="pageDiary">
       <div class="no-day" id="noDaySel"><div class="ei">📅</div><p>日付を選んでください</p></div>
       <div class="diary-main" id="diaryMain" style="display:none">
@@ -253,8 +277,6 @@ body { font-family:'Noto Sans JP',sans-serif; background:var(--bg); color:var(--
         </div>
       </div>
     </div>
-
-    <!-- TODO -->
     <div class="page" id="pageTodo">
       <div class="todo-page">
         <div class="todo-page-title">TODO</div>
@@ -287,26 +309,66 @@ body { font-family:'Noto Sans JP',sans-serif; background:var(--bg); color:var(--
   </main>
 </div>
 
+<!-- ═══ Mobile ═══ -->
+<div id="mobileApp" style="display:none">
+  <div class="m-topbar">
+    <div class="m-logo">日記</div>
+    <span class="m-sync">● 同期中</span>
+    <img class="m-avatar" id="mAvatar" src="" alt="">
+    <button class="m-logout" onclick="doLogout()">ログアウト</button>
+  </div>
+
+  <!-- Mobile Diary -->
+  <div class="m-page active" id="mPageDiary">
+    <div class="m-diary">
+      <div class="m-cal">
+        <div class="m-cal-header">
+          <button class="cal-nav" onclick="moveCal(-1)">‹</button>
+          <div class="m-cal-title" id="mCalTitle"></div>
+          <button class="cal-nav" onclick="moveCal(1)">›</button>
+        </div>
+        <div class="m-cal-grid" id="mCalGrid"></div>
+      </div>
+      <div class="m-posts-area" id="mPostsArea">
+        <div class="m-empty"><div class="ei">📅</div><p>日付を選んでください</p></div>
+      </div>
+      <div class="m-composer" id="mComposer" style="display:none">
+        <div class="m-mood-row" id="mMoodRow"></div>
+        <textarea class="m-textarea" id="mComposerText" placeholder="今日のひとこと…" oninput="onMInput()" onkeydown="onComposerKey(event)"></textarea>
+        <div class="m-composer-row">
+          <div class="m-char" id="mCharCount">0 文字</div>
+          <button class="btn-post" id="mBtnPost" onclick="postMobile()" disabled>投稿</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile TODO -->
+  <div class="m-page" id="mPageTodo">
+    <div class="m-todo-scroll">
+      <div class="m-todo-title">TODO</div>
+      <div class="section-tabs m-stabs">
+        <button class="stab active" id="mStabHabit" onclick="mSwitchTab('habit')">🔁 日課</button>
+        <button class="stab"        id="mStabTask"  onclick="mSwitchTab('task')">✅ タスク</button>
+      </div>
+      <div id="mTodoContent"></div>
+    </div>
+  </div>
+
+  <!-- Bottom nav -->
+  <nav class="m-bottomnav">
+    <button class="m-btn active" id="mBtnDiary" onclick="mSwitchPage('diary')">
+      <span class="m-btn-icon">📝</span>日記
+    </button>
+    <button class="m-btn" id="mBtnTodo" onclick="mSwitchPage('todo')">
+      <span class="m-btn-icon">☑</span>TODO
+    </button>
+  </nav>
+</div>
+
 <div class="toast" id="toast"></div>
 
-<!-- ============================================================
-  🔧 FIREBASE 設定
-  1. https://console.firebase.google.com/ でプロジェクト作成
-  2. Webアプリを追加 → firebaseConfig をコピーして下記に貼り付け
-  3. Authentication → Google を有効化
-  4. Firestore Database → テストモードで作成
-  5. Firestore のルールを以下に変更:
-     rules_version = '2';
-     service cloud.firestore {
-       match /databases/{database}/documents {
-         match /users/{uid}/{document=**} {
-           allow read, write: if request.auth.uid == uid;
-         }
-       }
-     }
-============================================================ -->
 <script>
-// ▼▼▼ ここに Firebase 設定を貼り付け ▼▼▼
 const firebaseConfig = {
   apiKey:            "AIzaSyDW2-iwy4jjPNABIesVWnuRamlQrr7l_LM",
   authDomain:        "my-diary-9cf73.firebaseapp.com",
@@ -315,159 +377,117 @@ const firebaseConfig = {
   messagingSenderId: "907629158152",
   appId:             "1:907629158152:web:87f1fb061128334a2c16bd"
 };
-// ▲▲▲ ここまで ▲▲▲
-
 firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db   = firebase.firestore();
-const gProvider = new firebase.auth.GoogleAuthProvider();
+const auth=firebase.auth(), db=firebase.firestore(), gProvider=new firebase.auth.GoogleAuthProvider();
+let uid=null, unsubs=[];
 
-let uid = null;
-let unsubs = [];  // Firestore listeners
-
-// ── Auth ──
-auth.onAuthStateChanged(user => {
-  if (user) {
-    uid = user.uid;
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('appWrap').style.display     = 'grid';
-    document.getElementById('userAvatar').src  = user.photoURL || '';
-    document.getElementById('userName').textContent = user.displayName || user.email;
-    startListeners();
-    initCal();
-    renderMoodRow();
-    selectDate(todayDs());
+auth.onAuthStateChanged(user=>{
+  if(user){
+    uid=user.uid;
+    document.getElementById('loginScreen').style.display='none';
+    const mob=window.innerWidth<=680;
+    if(mob){ document.getElementById('mobileApp').style.display='flex'; document.getElementById('mAvatar').src=user.photoURL||''; }
+    else { document.getElementById('pcApp').style.display='grid'; document.getElementById('pcAvatar').src=user.photoURL||''; document.getElementById('pcName').textContent=user.displayName||user.email; }
+    startListeners(); initCal(); renderMoodRow(); renderMMoodRow(); selectDate(todayDs());
   } else {
-    uid = null;
-    stopListeners();
-    document.getElementById('loginScreen').style.display = 'flex';
-    document.getElementById('appWrap').style.display     = 'none';
+    uid=null; stopListeners();
+    document.getElementById('loginScreen').style.display='flex';
+    document.getElementById('pcApp').style.display='none';
+    document.getElementById('mobileApp').style.display='none';
   }
 });
+function doLogin(){auth.signInWithPopup(gProvider).catch(e=>{document.getElementById('loginError').style.display='block';console.error(e);});}
+function doLogout(){auth.signOut();}
 
-function doLogin() {
-  auth.signInWithPopup(gProvider).catch(e => {
-    document.getElementById('loginError').style.display = 'block';
-    console.error(e);
-  });
-}
-function doLogout() { auth.signOut(); }
-
-// ── Firestore helpers ──
-function col(name) { return db.collection('users').doc(uid).collection(name); }
-
-function startListeners() {
+function col(n){return db.collection('users').doc(uid).collection(n);}
+function startListeners(){
   stopListeners();
-  const listen = (name, setter, renderer) => {
-    const u = col(name).onSnapshot(snap => {
-      const arr = snap.docs.map(d => ({id: d.id, ...d.data()}));
-      setter(arr);
-      renderer();
-    });
-    unsubs.push(u);
-  };
-  const listenDoc = (name, setter, renderer) => {
-    const u = col(name).doc('data').onSnapshot(snap => {
-      setter(snap.exists ? (snap.data().value ?? {}) : {});
-      renderer();
-    });
-    unsubs.push(u);
-  };
-
-  listen('posts',  v => { posts  = v; }, () => { renderCal(); renderSide(); renderPosts(); });
-  listen('habits', v => { habits = v; }, () => { if(curPage==='todo'&&curTab==='habit') renderHabits(); });
-  listen('tasks',  v => { tasks  = v; }, () => { if(curPage==='todo'&&curTab==='task')  renderTasks();  });
-  listenDoc('hlog', v => { hlog = v; }, () => { if(curPage==='todo'&&curTab==='habit') renderHabits(); });
+  const L=(n,set,r)=>{const u=col(n).onSnapshot(s=>{set(s.docs.map(d=>({id:d.id,...d.data()})));r();});unsubs.push(u);};
+  const LD=(n,set,r)=>{const u=col(n).doc('data').onSnapshot(s=>{set(s.exists?(s.data().value??{}):{});r();});unsubs.push(u);};
+  L('posts',  v=>{posts=v;},  ()=>{renderCal();renderMCal();renderSide();renderPosts();renderMPosts();});
+  L('habits', v=>{habits=v;}, ()=>{renderHabits();renderMTodo();});
+  L('tasks',  v=>{tasks=v;},  ()=>{renderTasks();renderMTodo();});
+  LD('hlog',  v=>{hlog=v;},   ()=>{renderHabits();renderMTodo();});
 }
+function stopListeners(){unsubs.forEach(u=>u());unsubs=[];}
+async function fsAdd(n,d){await col(n).doc(d.id).set(d);}
+async function fsDel(n,id){await col(n).doc(id).delete();}
+async function fsSet(n,d){await col(n).doc(d.id).set(d,{merge:true});}
+async function fsSetHlog(h){await col('hlog').doc('data').set({value:h});}
 
-function stopListeners() { unsubs.forEach(u => u()); unsubs = []; }
+let posts=[],habits=[],hlog={},tasks=[];
+const MOODS=['😊','😌','😢','😤','😴','🤩'];
+let calYear,calMonth,selDate=null,selMood='',curPage='diary',curTab='habit',mCurTab='habit';
 
-async function fsAdd(name, data)   { await col(name).doc(data.id).set(data); }
-async function fsDel(name, id)     { await col(name).doc(id).delete(); }
-async function fsSet(name, data)   { await col(name).doc(data.id).set(data, {merge:true}); }
-async function fsSetHlog(newHlog)  { await col('hlog').doc('data').set({value: newHlog}); }
+function pad(n){return String(n).padStart(2,'0');}
+function todayDs(){const d=new Date();return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;}
+function fmtDate(s){const[y,m,d]=s.split('-');const dow=new Date(+y,+m-1,+d).getDay();return `${y}年${Number(m)}月${Number(d)}日（${'日月火水木金土'[dow]}）`;}
+function fmtTime(ts){const d=new Date(ts);return `${pad(d.getHours())}:${pad(d.getMinutes())}`;}
+function genId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function cap(s){return s[0].toUpperCase()+s.slice(1);}
+function calcStreak(id){const log=hlog[id]||{};let s=0,d=new Date();const ds=x=>`${x.getFullYear()}-${pad(x.getMonth()+1)}-${pad(x.getDate())}`;if(!log[ds(d)])d.setDate(d.getDate()-1);while(log[ds(d)]){s++;d.setDate(d.getDate()-1);}return s;}
 
-// ── In-memory state (populated by listeners) ──
-let posts  = [];
-let habits = [];
-let hlog   = {};
-let tasks  = [];
-
-const MOODS = ['😊','😌','😢','😤','😴','🤩'];
-let calYear, calMonth;
-let selDate  = null;
-let selMood  = '';
-let curPage  = 'diary';
-let curTab   = 'habit';
-
-// ── Helpers ──
-function pad(n)    { return String(n).padStart(2,'0'); }
-function todayDs() { const d=new Date(); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
-function fmtDate(s){ const[y,m,d]=s.split('-'); const dow=new Date(+y,+m-1,+d).getDay(); return `${y}年${Number(m)}月${Number(d)}日（${'日月火水木金土'[dow]}）`; }
-function fmtTime(ts){ const d=new Date(ts); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; }
-function genId()   { return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
-function esc(s)    { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function cap(s)    { return s[0].toUpperCase()+s.slice(1); }
-
-// ── Streak ──
-function calcStreak(habitId) {
-  const log=hlog[habitId]||{}; let streak=0;
-  let d=new Date(); if(!log[todayDs()]) d.setDate(d.getDate()-1);
-  const ds=x=>`${x.getFullYear()}-${pad(x.getMonth()+1)}-${pad(x.getDate())}`;
-  while(log[ds(d)]){ streak++; d.setDate(d.getDate()-1); }
-  return streak;
-}
-
-// ── Page / Tab switch ──
-function switchPage(page) {
+// PC nav
+function switchPage(page){
   curPage=page;
-  ['diary','todo'].forEach(p=>{ document.getElementById('page'+cap(p)).classList.toggle('active',p===page); document.getElementById('nav'+cap(p)).classList.toggle('active',p===page); });
-  document.getElementById('calWrap').style.display   = page==='diary'?'':'none';
-  document.getElementById('datePanel').style.display = page==='diary'?'':'none';
-  if(page==='todo') renderTodoPage();
+  ['diary','todo'].forEach(p=>{document.getElementById('page'+cap(p)).classList.toggle('active',p===page);document.getElementById('nav'+cap(p)).classList.toggle('active',p===page);});
+  document.getElementById('calWrap').style.display=page==='diary'?'':'none';
+  document.getElementById('datePanel').style.display=page==='diary'?'':'none';
+  if(page==='todo')renderTodoPage();
 }
-function switchTab(tab) {
+function switchTab(tab){
   curTab=tab;
-  ['habit','task'].forEach(t=>{ document.getElementById('section'+cap(t)).classList.toggle('active',t===tab); document.getElementById('stab'+cap(t)).classList.toggle('active',t===tab); });
-  if(tab==='habit') renderHabits(); else renderTasks();
+  ['habit','task'].forEach(t=>{document.getElementById('section'+cap(t)).classList.toggle('active',t===tab);document.getElementById('stab'+cap(t)).classList.toggle('active',t===tab);});
+  if(tab==='habit')renderHabits();else renderTasks();
 }
 
-// ── Calendar ──
-function initCal() { const n=new Date(); calYear=n.getFullYear(); calMonth=n.getMonth(); renderCal(); }
-function renderCal() {
-  document.getElementById('calTitle').textContent=`${calYear}年${calMonth+1}月`;
-  const cm={};  posts.forEach(p=>{ cm[p.date]=(cm[p.date]||0)+1; });
-  const today=todayDs(), sd=new Date(calYear,calMonth,1).getDay(), tot=new Date(calYear,calMonth+1,0).getDate();
-  let h='日月火水木金土'.split('').map(l=>`<div class="cal-label">${l}</div>`).join('');
-  for(let i=0;i<sd;i++) h+=`<div class="cal-cell empty"></div>`;
+// Mobile nav
+function mSwitchPage(page){
+  ['diary','todo'].forEach(p=>{document.getElementById('mPage'+cap(p)).classList.toggle('active',p===page);document.getElementById('mBtn'+cap(p)).classList.toggle('active',p===page);});
+  if(page==='todo')renderMTodo();
+}
+function mSwitchTab(tab){
+  mCurTab=tab;
+  ['habit','task'].forEach(t=>{document.getElementById('mStab'+cap(t)).classList.toggle('active',t===tab);});
+  renderMTodo();
+}
+
+// Calendar
+function initCal(){const n=new Date();calYear=n.getFullYear();calMonth=n.getMonth();renderCal();renderMCal();}
+function buildCalHTML(pfx){
+  const cm={};posts.forEach(p=>{cm[p.date]=(cm[p.date]||0)+1;});
+  const today=todayDs(),sd=new Date(calYear,calMonth,1).getDay(),tot=new Date(calYear,calMonth+1,0).getDate();
+  let h='日月火水木金土'.split('').map(l=>`<div class="${pfx}label">${l}</div>`).join('');
+  for(let i=0;i<sd;i++)h+=`<div class="${pfx}cell empty"></div>`;
   for(let d=1;d<=tot;d++){
-    const s=`${calYear}-${pad(calMonth+1)}-${pad(d)}`;
-    const cnt=cm[s]||0;
-    const cls=['cal-cell',s===today?'today':'',s===selDate?'selected':'',cnt>0?'has-posts':''].filter(Boolean).join(' ');
-    h+=`<div class="${cls}" onclick="selectDate('${s}')"><div class="cal-num">${d}</div><div class="cal-count">${cnt||''}</div></div>`;
+    const s=`${calYear}-${pad(calMonth+1)}-${pad(d)}`;const cnt=cm[s]||0;
+    const cls=[`${pfx}cell`,s===today?'today':'',s===selDate?'selected':'',cnt>0?'has-posts':''].filter(Boolean).join(' ');
+    h+=`<div class="${cls}" onclick="selectDate('${s}')"><div class="${pfx}num">${d}</div><div class="${pfx}count">${cnt||''}</div></div>`;
   }
-  document.getElementById('calGrid').innerHTML=h;
+  return h;
 }
-function moveCal(dir){ calMonth+=dir; if(calMonth<0){calMonth=11;calYear--;} if(calMonth>11){calMonth=0;calYear++;} renderCal(); }
+function renderCal(){document.getElementById('calTitle').textContent=`${calYear}年${calMonth+1}月`;document.getElementById('calGrid').innerHTML=buildCalHTML('cal-');}
+function renderMCal(){const t=document.getElementById('mCalTitle'),g=document.getElementById('mCalGrid');if(!t||!g)return;t.textContent=`${calYear}年${calMonth+1}月`;g.innerHTML=buildCalHTML('m-cal-');}
+function moveCal(dir){calMonth+=dir;if(calMonth<0){calMonth=11;calYear--;}if(calMonth>11){calMonth=0;calYear++;}renderCal();renderMCal();}
+function selectDate(s){selDate=s;renderCal();renderMCal();renderSide();renderMain();renderMPosts();}
 
-function selectDate(s){ selDate=s; renderCal(); renderSide(); renderMain(); }
-
-// ── Sidebar ──
+// PC sidebar
 function renderSide(){
-  const noMsg=document.getElementById('noDateMsg'), side=document.getElementById('sidePosts');
-  if(!selDate){ noMsg.style.display=''; side.innerHTML=''; return; }
+  const noMsg=document.getElementById('noDateMsg'),side=document.getElementById('sidePosts');
+  if(!selDate){noMsg.style.display='';side.innerHTML='';return;}
   noMsg.style.display='none';
   const day=posts.filter(p=>p.date===selDate).sort((a,b)=>a.createdAt-b.createdAt);
-  if(!day.length){ side.innerHTML=`<div class="no-msg">${fmtDate(selDate)}<br>投稿なし</div>`; return; }
+  if(!day.length){side.innerHTML=`<div class="no-msg">${fmtDate(selDate)}<br>投稿なし</div>`;return;}
   side.innerHTML=`<div class="date-panel-header">${fmtDate(selDate)} · ${day.length}件</div>`+
     day.map(p=>`<div class="post-item"><div class="post-item-time">${fmtTime(p.createdAt)}</div><div class="post-item-body">${esc(p.body)}</div>${p.mood?`<div class="post-item-mood">${p.mood}</div>`:''}<button class="post-del" onclick="delPost('${p.id}')">×</button></div>`).join('');
 }
 
-// ── Main ──
+// PC main
 function renderMain(){
-  const noEl=document.getElementById('noDaySel'), mainEl=document.getElementById('diaryMain');
-  if(!selDate){ noEl.style.display='flex'; mainEl.style.display='none'; return; }
-  noEl.style.display='none'; mainEl.style.display='flex';
+  const noEl=document.getElementById('noDaySel'),mainEl=document.getElementById('diaryMain');
+  if(!selDate){noEl.style.display='flex';mainEl.style.display='none';return;}
+  noEl.style.display='none';mainEl.style.display='flex';
   document.getElementById('mainDateTitle').textContent=fmtDate(selDate);
   document.getElementById('composerLabel').textContent=fmtDate(selDate);
   renderPosts();
@@ -475,79 +495,102 @@ function renderMain(){
 function renderPosts(){
   const area=document.getElementById('postsArea');
   const day=posts.filter(p=>p.date===selDate).sort((a,b)=>a.createdAt-b.createdAt);
-  if(!day.length){ area.innerHTML=`<div class="empty-day"><div class="ei">✏️</div><p>この日の投稿はまだありません</p></div>`; return; }
+  if(!day.length){area.innerHTML=`<div class="empty-day"><div class="ei">✏️</div><p>この日の投稿はまだありません</p></div>`;return;}
   area.innerHTML=day.map(p=>`<div class="post-card"><div class="post-card-header"><div class="post-card-time">${fmtTime(p.createdAt)}</div>${p.mood?`<div class="post-card-mood">${p.mood}</div>`:''}<button class="post-card-del" onclick="delPost('${p.id}')">削除</button></div><div class="post-card-body">${esc(p.body)}</div></div>`).join('');
 }
 
-// ── Post ──
-function onComposerKey(e){ if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();postEntry();} }
+// Mobile posts
+function renderMPosts(){
+  const area=document.getElementById('mPostsArea'),comp=document.getElementById('mComposer');
+  if(!area)return;
+  if(!selDate){area.innerHTML=`<div class="m-empty"><div class="ei">📅</div><p>日付を選んでください</p></div>`;if(comp)comp.style.display='none';return;}
+  if(comp)comp.style.display='';
+  const day=posts.filter(p=>p.date===selDate).sort((a,b)=>a.createdAt-b.createdAt);
+  let h=`<div class="m-date-label">${fmtDate(selDate)}</div>`;
+  if(!day.length)h+=`<div class="m-empty"><div class="ei">✏️</div><p>この日の投稿はまだありません</p></div>`;
+  else h+=day.map(p=>`<div class="m-post-card"><div class="m-post-header"><div class="m-post-time">${fmtTime(p.createdAt)}</div>${p.mood?`<div class="m-post-mood">${p.mood}</div>`:''}<button class="m-post-del" onclick="delPost('${p.id}')">削除</button></div><div class="m-post-body">${esc(p.body)}</div></div>`).join('');
+  area.innerHTML=h;
+}
+
+// Post
+function onComposerKey(e){if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();postEntry();}}
 async function postEntry(){
-  const text=document.getElementById('composerText').value.trim();
-  if(!text||!selDate||!uid) return;
-  const p={id:genId(), date:selDate, body:text, mood:selMood, createdAt:Date.now()};
-  document.getElementById('composerText').value='';
-  selMood=''; renderMoodRow(); onInput();
-  await fsAdd('posts', p);
+  const text=document.getElementById('composerText').value.trim();if(!text||!selDate||!uid)return;
+  const p={id:genId(),date:selDate,body:text,mood:selMood,createdAt:Date.now()};
+  document.getElementById('composerText').value='';selMood='';renderMoodRow();onInput();
+  await fsAdd('posts',p);
 }
-async function delPost(id){ await fsDel('posts', id); }
-
-function onInput(){ const v=document.getElementById('composerText').value; document.getElementById('charCount').textContent=`${v.length} 文字`; document.getElementById('btnPost').disabled=!v.trim(); }
-
-// ── Mood ──
-function renderMoodRow(){
-  const row=document.getElementById('moodRow'); row.innerHTML='';
-  MOODS.forEach(m=>{ const b=document.createElement('button'); b.className='mood-btn'+(selMood===m?' active':''); b.textContent=m; b.onclick=()=>{selMood=selMood===m?'':m; renderMoodRow();}; row.appendChild(b); });
+async function postMobile(){
+  const text=document.getElementById('mComposerText').value.trim();if(!text||!selDate||!uid)return;
+  const p={id:genId(),date:selDate,body:text,mood:selMood,createdAt:Date.now()};
+  document.getElementById('mComposerText').value='';selMood='';renderMMoodRow();onMInput();
+  await fsAdd('posts',p);
 }
+async function delPost(id){await fsDel('posts',id);}
+function onInput(){const v=document.getElementById('composerText').value;document.getElementById('charCount').textContent=`${v.length} 文字`;document.getElementById('btnPost').disabled=!v.trim();}
+function onMInput(){const v=document.getElementById('mComposerText').value;document.getElementById('mCharCount').textContent=`${v.length} 文字`;document.getElementById('mBtnPost').disabled=!v.trim();}
 
-// ── TODO ──
-function renderTodoPage(){ if(curTab==='habit') renderHabits(); else renderTasks(); }
+// Mood
+function renderMoodRow(){const row=document.getElementById('moodRow');if(!row)return;row.innerHTML='';MOODS.forEach(m=>{const b=document.createElement('button');b.className='mood-btn'+(selMood===m?' active':'');b.textContent=m;b.onclick=()=>{selMood=selMood===m?'':m;renderMoodRow();renderMMoodRow();};row.appendChild(b);});}
+function renderMMoodRow(){const row=document.getElementById('mMoodRow');if(!row)return;row.innerHTML='';MOODS.forEach(m=>{const b=document.createElement('button');b.className='mood-btn'+(selMood===m?' active':'');b.textContent=m;b.onclick=()=>{selMood=selMood===m?'':m;renderMoodRow();renderMMoodRow();};row.appendChild(b);});}
 
-// ── Habits ──
+// PC TODO
+function renderTodoPage(){if(curTab==='habit')renderHabits();else renderTasks();}
+function habitItemHTML(h){const today=todayDs();const done=(hlog[h.id]||{})[today]===true;const streak=calcStreak(h.id);return `<div class="habit-item"><div class="habit-check ${done?'checked':''}" onclick="toggleHabit('${h.id}')">${done?'✓':''}</div><div class="habit-name">${esc(h.name)}</div>${streak>0?`<div class="habit-streak">🔥${streak}日</div>`:''}<button class="item-del" onclick="delHabit('${h.id}')">×</button></div>`;}
 function renderHabits(){
-  const today=todayDs(), el=document.getElementById('habitList');
-  if(!habits.length){ el.innerHTML=`<div class="empty-section">日課を追加してください</div>`; document.getElementById('habitCalWrap').style.display='none'; return; }
-  el.innerHTML=habits.map(h=>{ const done=(hlog[h.id]||{})[today]===true; const streak=calcStreak(h.id);
-    return `<div class="habit-item"><div class="habit-check ${done?'checked':''}" onclick="toggleHabit('${h.id}')">${done?'✓':''}</div><div class="habit-name">${esc(h.name)}</div>${streak>0?`<div class="habit-streak">🔥${streak}日</div>`:''}<button class="item-del" onclick="delHabit('${h.id}')">×</button></div>`;
-  }).join('');
+  const el=document.getElementById('habitList');if(!el)return;
+  if(!habits.length){el.innerHTML=`<div class="empty-section">日課を追加してください</div>`;document.getElementById('habitCalWrap').style.display='none';return;}
+  el.innerHTML=habits.map(habitItemHTML).join('');
   document.getElementById('habitCalWrap').style.display='';
-  const sel=document.getElementById('habitSelect'); const curVal=sel.value;
+  const sel=document.getElementById('habitSelect');const cv=sel.value;
   sel.innerHTML=habits.map(h=>`<option value="${h.id}">${esc(h.name)}</option>`).join('');
-  if(curVal&&habits.find(h=>h.id===curVal)) sel.value=curVal;
+  if(cv&&habits.find(h=>h.id===cv))sel.value=cv;
   renderHabitCal();
 }
 function renderHabitCal(){
-  const sel=document.getElementById('habitSelect'); const hid=sel.value; if(!hid) return;
-  const log=hlog[hid]||{}, today=todayDs();
-  const now=new Date(), y=now.getFullYear(), m=now.getMonth();
-  const sd=new Date(y,m,1).getDay(), tot=new Date(y,m+1,0).getDate();
+  const sel=document.getElementById('habitSelect');if(!sel)return;const hid=sel.value;if(!hid)return;
+  const log=hlog[hid]||{},today=todayDs();
+  const now=new Date(),y=now.getFullYear(),m=now.getMonth();
+  const sd=new Date(y,m,1).getDay(),tot=new Date(y,m+1,0).getDate();
   let h='日月火水木金土'.split('').map(l=>`<div class="hm-label">${l}</div>`).join('');
-  for(let i=0;i<sd;i++) h+=`<div class="hm-cell empty"></div>`;
-  for(let d=1;d<=tot;d++){ const s=`${y}-${pad(m+1)}-${pad(d)}`; const done=log[s]===true; const fut=s>today; h+=`<div class="hm-cell ${done?'done':''} ${fut?'future':''}">${done?'✓':d}</div>`; }
+  for(let i=0;i<sd;i++)h+=`<div class="hm-cell empty"></div>`;
+  for(let d=1;d<=tot;d++){const s=`${y}-${pad(m+1)}-${pad(d)}`;const done=log[s]===true;const fut=s>today;h+=`<div class="hm-cell ${done?'done':''} ${fut?'future':''}">${done?'✓':d}</div>`;}
   document.getElementById('habitMonthGrid').innerHTML=h;
 }
-async function toggleHabit(id){
-  const today=todayDs(); const newHlog=JSON.parse(JSON.stringify(hlog));
-  if(!newHlog[id]) newHlog[id]={};
-  newHlog[id][today]=!newHlog[id][today];
-  if(!newHlog[id][today]) delete newHlog[id][today];
-  await fsSetHlog(newHlog);
-}
-async function addHabit(){ const inp=document.getElementById('habitInput'); const name=inp.value.trim(); if(!name) return; await fsAdd('habits',{id:genId(),name,createdAt:Date.now()}); inp.value=''; }
-async function delHabit(id){ await fsDel('habits',id); const nh=JSON.parse(JSON.stringify(hlog)); delete nh[id]; await fsSetHlog(nh); }
+async function toggleHabit(id){const today=todayDs();const nh=JSON.parse(JSON.stringify(hlog));if(!nh[id])nh[id]={};nh[id][today]=!nh[id][today];if(!nh[id][today])delete nh[id][today];await fsSetHlog(nh);}
+async function addHabit(){const inp=document.getElementById('habitInput');const name=inp.value.trim();if(!name)return;await fsAdd('habits',{id:genId(),name,createdAt:Date.now()});inp.value='';}
+async function delHabit(id){await fsDel('habits',id);const nh=JSON.parse(JSON.stringify(hlog));delete nh[id];await fsSetHlog(nh);}
 
-// ── Tasks ──
+function taskItemHTML(t){const today=todayDs();let dueHtml=t.due?`<div class="task-due ${!t.done&&t.due<today?'overdue':''}">${t.due}</div>`:`<input class="task-due-input" type="date" value="" onchange="setDue('${t.id}',this.value)" title="期限">`;return `<div class="task-item ${t.done?'done':''}"><div class="task-check ${t.done?'checked':''}" onclick="toggleTask('${t.id}')">${t.done?'✓':''}</div><input class="task-text" value="${esc(t.text)}" oninput="editTask('${t.id}',this.value)">${dueHtml}<button class="item-del" onclick="delTask('${t.id}')">×</button></div>`;}
 function renderTasks(){
-  const undone=tasks.filter(t=>!t.done), done=tasks.filter(t=>t.done), today=todayDs();
-  const makeItem=t=>{ let dueHtml=t.due?`<div class="task-due ${!t.done&&t.due<today?'overdue':''}">${t.due}</div>`:`<input class="task-due-input" type="date" value="" onchange="setDue('${t.id}',this.value)" title="期限を設定">`;
-    return `<div class="task-item ${t.done?'done':''}"><div class="task-check ${t.done?'checked':''}" onclick="toggleTask('${t.id}')">${t.done?'✓':''}</div><input class="task-text" value="${esc(t.text)}" oninput="editTask('${t.id}',this.value)">${dueHtml}<button class="item-del" onclick="delTask('${t.id}')">×</button></div>`; };
-  document.getElementById('taskUndone').innerHTML=undone.length?`<div class="section-label">未完了 ${undone.length}</div>${undone.map(makeItem).join('')}`:`<div class="empty-section">タスクはありません</div>`;
-  document.getElementById('taskDone').innerHTML=done.length?`<div class="section-label">完了済み ${done.length}</div>${done.map(makeItem).join('')}`:'';
+  const undone=tasks.filter(t=>!t.done),done=tasks.filter(t=>t.done);
+  document.getElementById('taskUndone').innerHTML=undone.length?`<div class="section-label">未完了 ${undone.length}</div>${undone.map(taskItemHTML).join('')}`:`<div class="empty-section">タスクはありません</div>`;
+  document.getElementById('taskDone').innerHTML=done.length?`<div class="section-label">完了済み ${done.length}</div>${done.map(taskItemHTML).join('')}`:'';
 }
-async function addTask(){ const inp=document.getElementById('taskInput'); const text=inp.value.trim(); if(!text) return; await fsAdd('tasks',{id:genId(),text,done:false,due:'',createdAt:Date.now()}); inp.value=''; }
-async function toggleTask(id){ const t=tasks.find(t=>t.id===id); if(t) await fsSet('tasks',{id,done:!t.done}); }
-async function editTask(id,val){ await fsSet('tasks',{id,text:val}); }
-async function setDue(id,val){ await fsSet('tasks',{id,due:val}); }
-async function delTask(id){ await fsDel('tasks',id); }
+async function addTask(){const inp=document.getElementById('taskInput');const text=inp.value.trim();if(!text)return;await fsAdd('tasks',{id:genId(),text,done:false,due:'',createdAt:Date.now()});inp.value='';}
+async function toggleTask(id){const t=tasks.find(t=>t.id===id);if(t)await fsSet('tasks',{id,done:!t.done});}
+async function editTask(id,val){await fsSet('tasks',{id,text:val});}
+async function setDue(id,val){await fsSet('tasks',{id,due:val});}
+async function delTask(id){await fsDel('tasks',id);}
+
+// Mobile TODO
+function renderMTodo(){
+  const el=document.getElementById('mTodoContent');if(!el)return;
+  if(mCurTab==='habit'){
+    const addRow=`<div class="add-row"><input class="add-input" id="mHabitInput" type="text" placeholder="日課を追加…" onkeydown="if(event.key==='Enter')mAddHabit()"><button class="btn-add" onclick="mAddHabit()">追加</button></div>`;
+    el.innerHTML=addRow+(habits.length?habits.map(habitItemHTML).join(''):`<div class="empty-section">日課を追加してください</div>`);
+  } else {
+    const undone=tasks.filter(t=>!t.done),done=tasks.filter(t=>t.done);
+    const addRow=`<div class="add-row"><input class="add-input" id="mTaskInput" type="text" placeholder="タスクを追加…" onkeydown="if(event.key==='Enter')mAddTask()"><button class="btn-add" onclick="mAddTask()">追加</button></div>`;
+    el.innerHTML=addRow+
+      (undone.length?`<div class="section-label">未完了 ${undone.length}</div>${undone.map(taskItemHTML).join('')}`:`<div class="empty-section">タスクはありません</div>`)+
+      (done.length?`<div class="section-label" style="margin-top:16px">完了済み ${done.length}</div>${done.map(taskItemHTML).join('')}`:'');
+  }
+}
+async function mAddHabit(){const inp=document.getElementById('mHabitInput');if(!inp)return;const name=inp.value.trim();if(!name)return;await fsAdd('habits',{id:genId(),name,createdAt:Date.now()});inp.value='';}
+async function mAddTask(){const inp=document.getElementById('mTaskInput');if(!inp)return;const text=inp.value.trim();if(!text)return;await fsAdd('tasks',{id:genId(),text,done:false,due:'',createdAt:Date.now()});inp.value='';}
+
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000);}
 </script>
 </body>
 </html>
