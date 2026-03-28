@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>日記</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;600&family=Noto+Sans+JP:wght@300;400&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
@@ -10,10 +10,15 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-:root{--bg:#faf9f7;--surface:#fff;--border:#e8e4df;--text:#1a1714;--muted:#9b958e;--accent:#5c4a3a;--accent-light:#f0ebe4;--today:#d4a574;--green:#8fad88;--danger:#c0392b;--streak:#e8611a;--tr:0.14s ease;}
+:root{
+  --bg:#faf9f7;--surface:#fff;--border:#e8e4df;
+  --text:#1a1714;--muted:#9b958e;--accent:#5c4a3a;
+  --accent-light:#f0ebe4;--today:#d4a574;--green:#8fad88;
+  --danger:#c0392b;--streak:#e8611a;--tr:0.14s ease;
+}
 body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.6;}
 
-/* ── Login ── */
+/* Login */
 #loginScreen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:999;}
 .login-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:48px 40px;text-align:center;width:320px;box-shadow:0 4px 24px rgba(0,0,0,.07);}
 .login-logo{font-family:'Noto Serif JP',serif;font-weight:600;font-size:30px;color:var(--accent);margin-bottom:6px;}
@@ -22,8 +27,10 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .btn-google:hover{background:var(--accent-light);border-color:var(--accent);}
 .login-error{margin-top:14px;font-size:12px;color:var(--danger);display:none;}
 
-/* ── PC layout ── */
-.pc-app{display:grid;grid-template-columns:272px 1fr;min-height:100vh;}
+/* Layout */
+.app{display:grid;grid-template-columns:272px 1fr;min-height:100vh;}
+
+/* Sidebar */
 .sidebar{background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow:hidden;}
 .sidebar-header{padding:16px 20px 12px;border-bottom:1px solid var(--border);}
 .logo{font-family:'Noto Serif JP',serif;font-weight:600;font-size:19px;letter-spacing:.08em;color:var(--accent);margin-bottom:10px;}
@@ -32,13 +39,16 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .user-name{font-size:11px;color:var(--muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .btn-logout{background:none;border:none;font-size:11px;color:var(--muted);cursor:pointer;padding:2px 4px;border-radius:4px;transition:color var(--tr);}
 .btn-logout:hover{color:var(--danger);}
-.sync-indicator{display:inline-flex;align-items:center;gap:4px;font-size:10px;color:var(--green);margin-bottom:8px;}
+.sync-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;color:var(--green);margin-bottom:8px;}
 .sync-dot{width:5px;height:5px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
-.nav-tabs{display:flex;gap:4px;}
-.nav-tab{flex:1;padding:6px 0;border:1px solid var(--border);border-radius:7px;background:none;font-family:inherit;font-size:12px;color:var(--muted);cursor:pointer;transition:all var(--tr);text-align:center;}
+
+.nav-tabs{display:flex;gap:3px;flex-wrap:wrap;}
+.nav-tab{flex:1;min-width:0;padding:6px 4px;border:1px solid var(--border);border-radius:7px;background:none;font-family:inherit;font-size:11px;color:var(--muted);cursor:pointer;transition:all var(--tr);text-align:center;white-space:nowrap;}
 .nav-tab.active{background:var(--accent);color:#fff;border-color:var(--accent);}
 .nav-tab:hover:not(.active){background:var(--accent-light);color:var(--accent);border-color:var(--accent);}
+
+/* Calendar */
 .cal-wrap{padding:13px 20px;border-bottom:1px solid var(--border);}
 .cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;}
 .cal-title{font-family:'Noto Serif JP',serif;font-size:13px;font-weight:600;}
@@ -55,6 +65,8 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .cal-cell.today .cal-num{background:var(--today);color:#fff;font-weight:600;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
 .cal-count{font-size:9px;color:var(--muted);min-height:11px;line-height:1;}
 .cal-cell.has-posts .cal-count{color:var(--accent);font-weight:600;}
+
+/* Side posts */
 .date-panel{flex:1;overflow-y:auto;}
 .date-panel-header{padding:11px 20px 7px;font-size:11px;color:var(--muted);border-bottom:1px solid var(--border);}
 .post-item{display:flex;align-items:flex-start;gap:7px;padding:8px 20px;transition:background var(--tr);}
@@ -66,9 +78,13 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .post-item:hover .post-del{opacity:1;}
 .post-del:hover{color:var(--danger);}
 .no-msg{padding:18px;text-align:center;color:var(--muted);font-size:12px;}
+
+/* Main */
 .main{display:flex;flex-direction:column;}
 .page{display:none;flex:1;flex-direction:column;}
 .page.active{display:flex;}
+
+/* Diary */
 .diary-main{flex:1;display:flex;flex-direction:column;padding:30px 48px;max-width:700px;width:100%;margin:0 auto;}
 .diary-date-title{font-family:'Noto Serif JP',serif;font-size:19px;font-weight:600;margin-bottom:18px;}
 .posts-area{flex:1;overflow-y:auto;padding-bottom:10px;}
@@ -84,6 +100,8 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .empty-day .ei{font-size:34px;opacity:.3;}
 .no-day{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--muted);}
 .no-day .ei{font-size:38px;opacity:.25;}
+
+/* Composer */
 .composer{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:13px 17px;margin-top:10px;flex-shrink:0;}
 .composer-top{display:flex;align-items:center;gap:6px;margin-bottom:9px;}
 .composer-label{font-size:12px;color:var(--muted);flex:1;}
@@ -97,9 +115,11 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .btn-post{padding:8px 20px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:13px;cursor:pointer;transition:opacity var(--tr);}
 .btn-post:hover{opacity:.85;}
 .btn-post:disabled{opacity:.35;cursor:default;}
+
+/* TODO page */
 .todo-page{flex:1;overflow-y:auto;padding:30px 48px;max-width:700px;width:100%;margin:0 auto;}
-.todo-page-title{font-family:'Noto Serif JP',serif;font-size:20px;font-weight:600;margin-bottom:20px;}
-.section-tabs{display:flex;gap:6px;margin-bottom:18px;border-bottom:1px solid var(--border);}
+.todo-page-title{font-family:'Noto Serif JP',serif;font-size:20px;font-weight:600;margin-bottom:18px;}
+.section-tabs{display:flex;gap:0;margin-bottom:18px;border-bottom:1px solid var(--border);}
 .stab{padding:7px 16px;background:none;border:none;font-family:inherit;font-size:13px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all var(--tr);}
 .stab.active{color:var(--accent);border-bottom-color:var(--accent);}
 .stab:hover:not(.active){color:var(--text);}
@@ -110,13 +130,15 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .add-input:focus{border-color:var(--accent);}
 .btn-add{padding:9px 16px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:13px;cursor:pointer;transition:opacity var(--tr);white-space:nowrap;}
 .btn-add:hover{opacity:.85;}
+
+/* Habits */
 .habit-item{display:flex;align-items:center;gap:10px;padding:11px 14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;margin-bottom:6px;}
 .habit-check{width:20px;height:20px;border-radius:6px;flex-shrink:0;border:1.5px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;transition:all var(--tr);}
 .habit-check.checked{background:var(--green);border-color:var(--green);}
 .habit-name{flex:1;font-size:13px;}
 .habit-streak{font-size:12px;color:var(--streak);font-weight:600;white-space:nowrap;}
 .item-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:15px;padding:0 3px;opacity:0;transition:opacity var(--tr),color var(--tr);}
-.habit-item:hover .item-del,.task-item:hover .item-del{opacity:1;}
+.habit-item:hover .item-del,.task-item:hover .item-del,.ent-item:hover .item-del{opacity:1;}
 .item-del:hover{color:var(--danger);}
 .habit-cal-wrap{margin-top:20px;}
 .habit-cal-title{font-size:12px;color:var(--muted);margin-bottom:10px;}
@@ -127,6 +149,8 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .hm-cell.done{background:var(--green);border-color:var(--green);color:#fff;}
 .hm-cell.empty{border:none;background:transparent;}
 .hm-cell.future{opacity:.3;}
+
+/* Tasks */
 .task-item{display:flex;align-items:center;gap:10px;padding:11px 14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;margin-bottom:6px;transition:opacity var(--tr);}
 .task-item.done{opacity:.42;}
 .task-check{width:18px;height:18px;border-radius:5px;flex-shrink:0;border:1.5px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;transition:all var(--tr);}
@@ -139,73 +163,89 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .section-label{font-size:10px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;margin-bottom:8px;}
 .done-section{margin-top:18px;}
 .empty-section{text-align:center;color:var(--muted);font-size:13px;padding:22px 0;}
+
+/* Entertainment */
+.ent-item{display:flex;align-items:center;gap:10px;padding:11px 14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;margin-bottom:6px;}
+.ent-cat{font-size:11px;color:var(--muted);background:var(--accent-light);border-radius:5px;padding:2px 8px;white-space:nowrap;flex-shrink:0;}
+.ent-title{flex:1;font-size:13px;color:var(--text);}
+.ent-done{width:18px;height:18px;border-radius:5px;flex-shrink:0;border:1.5px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;transition:all var(--tr);}
+.ent-done.checked{background:var(--today);border-color:var(--today);}
+.ent-item.watched{opacity:.45;}
+.ent-item.watched .ent-title{text-decoration:line-through;color:var(--muted);}
+.ent-add-row{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+.ent-cat-select{padding:9px 10px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;color:var(--text);background:var(--surface);outline:none;cursor:pointer;transition:border-color var(--tr);}
+.ent-cat-select:focus{border-color:var(--accent);}
+
+/* Memo page */
+.memo-page{flex:1;overflow-y:auto;padding:30px 48px;max-width:700px;width:100%;margin:0 auto;}
+.memo-page-title{font-family:'Noto Serif JP',serif;font-size:20px;font-weight:600;margin-bottom:18px;}
+.memo-toolbar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+.memo-tag-filter{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
+.tag-chip{padding:3px 10px;border-radius:20px;font-size:11px;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer;transition:all var(--tr);}
+.tag-chip.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+.tag-chip:hover:not(.active){background:var(--accent-light);color:var(--accent);border-color:var(--accent);}
+
+.memo-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin-bottom:10px;}
+.memo-card-header{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.memo-card-date{font-size:11px;color:var(--muted);}
+.memo-card-tags{display:flex;gap:4px;flex-wrap:wrap;flex:1;}
+.memo-tag{font-size:10px;background:var(--accent-light);color:var(--accent);border-radius:4px;padding:1px 7px;}
+.memo-card-del{margin-left:auto;background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:2px 5px;border-radius:4px;opacity:0;transition:opacity var(--tr),color var(--tr);}
+.memo-card:hover .memo-card-del{opacity:1;}
+.memo-card-del:hover{color:var(--danger);}
+.memo-card-body{font-family:'Noto Serif JP',serif;font-size:14px;line-height:1.8;white-space:pre-wrap;font-weight:300;color:var(--text);margin-bottom:10px;}
+.memo-card-img{max-width:100%;border-radius:8px;display:block;margin-top:8px;}
+
+.memo-composer{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin-bottom:16px;}
+.memo-composer textarea{width:100%;border:none;background:transparent;outline:none;resize:none;font-family:'Noto Serif JP',serif;font-size:14px;line-height:1.8;color:var(--text);font-weight:300;min-height:80px;}
+.memo-composer textarea::placeholder{color:#ccc8c2;}
+.memo-composer-footer{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap;}
+.memo-tag-input{flex:1;min-width:120px;padding:6px 10px;border:1px solid var(--border);border-radius:7px;font-family:inherit;font-size:12px;color:var(--text);background:var(--bg);outline:none;}
+.memo-tag-input:focus{border-color:var(--accent);}
+.memo-img-btn{padding:6px 12px;border:1px solid var(--border);border-radius:7px;background:none;font-family:inherit;font-size:12px;color:var(--muted);cursor:pointer;transition:all var(--tr);}
+.memo-img-btn:hover{background:var(--accent-light);color:var(--accent);border-color:var(--accent);}
+.memo-save-btn{padding:7px 18px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:13px;cursor:pointer;transition:opacity var(--tr);}
+.memo-save-btn:hover{opacity:.85;}
+.memo-preview-img{max-width:120px;border-radius:6px;margin-top:8px;display:none;}
+
+/* Toast */
 .toast{position:fixed;bottom:22px;right:22px;background:var(--text);color:#fff;padding:10px 17px;border-radius:8px;font-size:13px;opacity:0;transform:translateY(8px);transition:all .2s ease;pointer-events:none;z-index:1000;}
 .toast.show{opacity:1;transform:translateY(0);}
+
 ::-webkit-scrollbar{width:4px;}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
 
-/* ═══ MOBILE ═══ */
-@media(max-width:680px){
-  .pc-app{display:none!important;}
-  #mobileApp{display:flex!important;flex-direction:column;height:100dvh;overflow:hidden;}
-  .m-topbar{display:flex;align-items:center;padding:12px 16px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;padding-top:max(12px,env(safe-area-inset-top));}
-  .m-logo{font-family:'Noto Serif JP',serif;font-weight:600;font-size:17px;color:var(--accent);flex:1;}
-  .m-sync{font-size:10px;color:var(--green);margin:0 8px;}
-  .m-avatar{width:24px;height:24px;border-radius:50%;object-fit:cover;border:1px solid var(--border);}
-  .m-logout{background:none;border:none;font-size:11px;color:var(--muted);cursor:pointer;}
-  .m-page{display:none;flex:1;flex-direction:column;overflow:hidden;min-height:0;}
-  .m-page.active{display:flex;}
-  .m-bottomnav{display:flex;background:var(--surface);border-top:1px solid var(--border);flex-shrink:0;padding-bottom:env(safe-area-inset-bottom);}
-  .m-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:10px 0;background:none;border:none;font-family:inherit;font-size:10px;color:var(--muted);cursor:pointer;transition:color var(--tr);}
-  .m-btn.active{color:var(--accent);}
-  .m-btn-icon{font-size:22px;line-height:1;}
-
-  /* Diary */
-  .m-diary{display:flex;flex-direction:column;flex:1;min-height:0;}
-  .m-cal{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 14px;flex-shrink:0;}
-  .m-cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
-  .m-cal-title{font-family:'Noto Serif JP',serif;font-size:13px;font-weight:600;}
-  .m-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
-  .m-cal-label{text-align:center;font-size:10px;color:var(--muted);padding:2px 0;}
-  .m-cal-cell{display:flex;flex-direction:column;align-items:center;border-radius:6px;cursor:pointer;padding:4px 2px;transition:background var(--tr);}
-  .m-cal-cell:hover:not(.empty){background:var(--accent-light);}
-  .m-cal-cell.empty{pointer-events:none;}
-  .m-cal-cell.selected{background:var(--accent-light);}
-  .m-cal-cell.selected .m-cal-num{color:var(--accent);font-weight:700;}
-  .m-cal-num{font-size:12px;color:var(--text);line-height:1.2;}
-  .m-cal-cell.today .m-cal-num{background:var(--today);color:#fff;font-weight:600;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
-  .m-cal-count{font-size:9px;color:var(--muted);min-height:11px;}
-  .m-cal-cell.has-posts .m-cal-count{color:var(--accent);font-weight:600;}
-  .m-posts-area{flex:1;overflow-y:auto;padding:10px 14px;min-height:0;}
-  .m-date-label{font-family:'Noto Serif JP',serif;font-size:14px;font-weight:600;margin-bottom:10px;}
-  .m-post-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;}
-  .m-post-header{display:flex;align-items:center;gap:6px;margin-bottom:6px;}
-  .m-post-time{font-size:11px;color:var(--muted);}
-  .m-post-mood{font-size:14px;}
-  .m-post-del{margin-left:auto;background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer;padding:2px 4px;}
-  .m-post-body{font-family:'Noto Serif JP',serif;font-size:14px;line-height:1.8;white-space:pre-wrap;font-weight:300;}
-  .m-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--muted);padding:32px 0;}
-  .m-empty .ei{font-size:32px;opacity:.3;}
-  .m-composer{background:var(--surface);border-top:1px solid var(--border);padding:10px 14px;flex-shrink:0;}
-  .m-mood-row{display:flex;gap:3px;overflow-x:auto;margin-bottom:8px;}
-  .m-mood-row::-webkit-scrollbar{display:none;}
-  .m-textarea{width:100%;border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-family:'Noto Serif JP',serif;font-size:16px;line-height:1.7;color:var(--text);background:var(--bg);outline:none;resize:none;min-height:52px;max-height:120px;font-weight:300;transition:border-color var(--tr);}
-  .m-textarea:focus{border-color:var(--accent);}
-  .m-textarea::placeholder{color:#ccc8c2;}
-  .m-composer-row{display:flex;align-items:center;justify-content:space-between;margin-top:8px;}
-  .m-char{font-size:11px;color:var(--muted);}
-
-  /* TODO mobile */
-  .m-todo-scroll{flex:1;overflow-y:auto;padding:14px 14px 0;min-height:0;}
-  .m-todo-title{font-family:'Noto Serif JP',serif;font-size:18px;font-weight:600;margin-bottom:14px;}
-  .m-stabs{margin-bottom:14px;}
-
-  /* iOS zoom prevention */
-  input,textarea,select{font-size:16px!important;}
+/* Mobile */
+@media(max-width:768px){
+  .app{grid-template-columns:1fr;}
+  .sidebar{display:none;}
+  .main{padding-bottom:64px;}
+  .bottom-nav{display:flex;position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);z-index:100;height:58px;}
+  .bottom-nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:none;border:none;font-family:inherit;font-size:10px;color:var(--muted);cursor:pointer;transition:color var(--tr);padding:6px 0;}
+  .bottom-nav-btn.active{color:var(--accent);}
+  .bnav-icon{font-size:20px;line-height:1;}
+  .mobile-header{display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50;}
+  .mobile-logo{font-family:'Noto Serif JP',serif;font-weight:600;font-size:17px;letter-spacing:.08em;color:var(--accent);flex:1;}
+  .mobile-cal-section{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 16px;}
+  .diary-main{padding:14px 16px;}
+  .diary-date-title{font-size:15px;margin-bottom:10px;}
+  .post-card{padding:11px 13px;margin-bottom:7px;}
+  .post-card-body{font-size:14px;}
+  .composer{padding:11px 13px;margin-top:7px;}
+  .composer textarea{font-size:14px;min-height:56px;}
+  .mood-btn{padding:2px 5px;font-size:12px;}
+  .no-day{display:none!important;}
+  .todo-page{padding:14px 16px;}
+  .todo-page-title{font-size:17px;margin-bottom:14px;}
+  .memo-page{padding:14px 16px;}
+  .memo-page-title{font-size:17px;margin-bottom:14px;}
+  .stab{padding:6px 10px;font-size:12px;}
 }
-@media(min-width:681px){
-  #mobileApp{display:none!important;}
+@media(min-width:769px){
+  .bottom-nav{display:none;}
+  .mobile-header{display:none;}
+  .mobile-cal-section{display:none;}
 }
 </style>
 </head>
@@ -225,24 +265,42 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
       </svg>
       Googleでログイン
     </button>
-    <div class="login-error" id="loginError">設定を確認してください</div>
+    <div class="login-error" id="loginError">Firebase設定を確認してください</div>
   </div>
 </div>
 
-<!-- ═══ PC ═══ -->
-<div class="pc-app" id="pcApp" style="display:none">
+<!-- Mobile header -->
+<div class="mobile-header" id="mobileHeader" style="display:none">
+  <div class="mobile-logo">日記</div>
+  <img id="mobileAvatar" src="" alt="" style="width:26px;height:26px;border-radius:50%;object-fit:cover;border:1px solid var(--border);">
+  <button class="btn-logout" onclick="doLogout()">ログアウト</button>
+</div>
+
+<!-- Mobile calendar -->
+<div class="mobile-cal-section" id="mobileCal" style="display:none">
+  <div class="cal-header">
+    <button class="cal-nav" onclick="moveCal(-1)">‹</button>
+    <div class="cal-title" id="calTitleM"></div>
+    <button class="cal-nav" onclick="moveCal(1)">›</button>
+  </div>
+  <div class="cal-grid" id="calGridM"></div>
+</div>
+
+<!-- App -->
+<div class="app" id="appWrap" style="display:none">
   <aside class="sidebar">
     <div class="sidebar-header">
       <div class="logo">日記</div>
       <div class="user-bar">
-        <img class="user-avatar" id="pcAvatar" src="" alt="">
-        <span class="user-name" id="pcName"></span>
+        <img class="user-avatar" id="userAvatar" src="" alt="">
+        <span class="user-name" id="userName"></span>
         <button class="btn-logout" onclick="doLogout()">ログアウト</button>
       </div>
-      <div class="sync-indicator"><div class="sync-dot"></div>同期中</div>
+      <div class="sync-badge"><div class="sync-dot"></div>同期中</div>
       <div class="nav-tabs">
-        <button class="nav-tab active" id="navDiary" onclick="switchPage('diary')">📝 日記</button>
-        <button class="nav-tab"        id="navTodo"  onclick="switchPage('todo')">☑ TODO</button>
+        <button class="nav-tab active" id="navDiary"  onclick="switchPage('diary')">📝 日記</button>
+        <button class="nav-tab"        id="navTodo"   onclick="switchPage('todo')">☑ TODO</button>
+        <button class="nav-tab"        id="navMemo"   onclick="switchPage('memo')">📋 メモ</button>
       </div>
     </div>
     <div class="cal-wrap" id="calWrap">
@@ -258,7 +316,9 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
       <div id="sidePosts"></div>
     </div>
   </aside>
+
   <main class="main">
+    <!-- Diary -->
     <div class="page active" id="pageDiary">
       <div class="no-day" id="noDaySel"><div class="ei">📅</div><p>日付を選んでください</p></div>
       <div class="diary-main" id="diaryMain" style="display:none">
@@ -277,13 +337,17 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
         </div>
       </div>
     </div>
+
+    <!-- TODO -->
     <div class="page" id="pageTodo">
       <div class="todo-page">
         <div class="todo-page-title">TODO</div>
         <div class="section-tabs">
           <button class="stab active" id="stabHabit" onclick="switchTab('habit')">🔁 日課</button>
           <button class="stab"        id="stabTask"  onclick="switchTab('task')">✅ タスク</button>
+          <button class="stab"        id="stabEnt"   onclick="switchTab('ent')">🎮 娯楽</button>
         </div>
+        <!-- Habit -->
         <div class="tab-section active" id="sectionHabit">
           <div class="add-row">
             <input class="add-input" id="habitInput" type="text" placeholder="日課を追加…" onkeydown="if(event.key==='Enter')addHabit()">
@@ -296,6 +360,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
             <div class="habit-month-grid" id="habitMonthGrid"></div>
           </div>
         </div>
+        <!-- Task -->
         <div class="tab-section" id="sectionTask">
           <div class="add-row">
             <input class="add-input" id="taskInput" type="text" placeholder="タスクを追加…" onkeydown="if(event.key==='Enter')addTask()">
@@ -304,71 +369,67 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
           <div id="taskUndone"></div>
           <div class="done-section" id="taskDone"></div>
         </div>
+        <!-- Entertainment -->
+        <div class="tab-section" id="sectionEnt">
+          <div class="ent-add-row">
+            <select class="ent-cat-select" id="entCat">
+              <option value="映画">🎬 映画</option>
+              <option value="ドラマ">📺 ドラマ</option>
+              <option value="アニメ">✨ アニメ</option>
+              <option value="ゲーム">🎮 ゲーム</option>
+              <option value="本">📚 本</option>
+              <option value="音楽">🎵 音楽</option>
+              <option value="その他">💡 その他</option>
+            </select>
+            <input class="add-input" id="entInput" type="text" placeholder="タイトルを入力…" onkeydown="if(event.key==='Enter')addEnt()">
+            <button class="btn-add" onclick="addEnt()">追加</button>
+          </div>
+          <div id="entList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Memo -->
+    <div class="page" id="pageMemo">
+      <div class="memo-page">
+        <div class="memo-page-title">メモ</div>
+        <!-- Composer -->
+        <div class="memo-composer">
+          <textarea id="memoText" placeholder="メモを書く…"></textarea>
+          <img id="memoPreviewImg" class="memo-preview-img" src="" alt="">
+          <input type="file" id="memoImgInput" accept="image/*" style="display:none" onchange="onMemoImg(event)">
+          <div class="memo-composer-footer">
+            <input class="memo-tag-input" id="memoTagInput" type="text" placeholder="タグ（カンマ区切り）">
+            <button class="memo-img-btn" onclick="document.getElementById('memoImgInput').click()">📷 画像</button>
+            <button class="memo-save-btn" onclick="saveMemo()">保存</button>
+          </div>
+        </div>
+        <!-- Tag filter -->
+        <div class="memo-tag-filter" id="memoTagFilter"></div>
+        <!-- Memo list -->
+        <div id="memoList"></div>
       </div>
     </div>
   </main>
 </div>
 
-<!-- ═══ Mobile ═══ -->
-<div id="mobileApp" style="display:none">
-  <div class="m-topbar">
-    <div class="m-logo">日記</div>
-    <span class="m-sync">● 同期中</span>
-    <img class="m-avatar" id="mAvatar" src="" alt="">
-    <button class="m-logout" onclick="doLogout()">ログアウト</button>
-  </div>
-
-  <!-- Mobile Diary -->
-  <div class="m-page active" id="mPageDiary">
-    <div class="m-diary">
-      <div class="m-cal">
-        <div class="m-cal-header">
-          <button class="cal-nav" onclick="moveCal(-1)">‹</button>
-          <div class="m-cal-title" id="mCalTitle"></div>
-          <button class="cal-nav" onclick="moveCal(1)">›</button>
-        </div>
-        <div class="m-cal-grid" id="mCalGrid"></div>
-      </div>
-      <div class="m-posts-area" id="mPostsArea">
-        <div class="m-empty"><div class="ei">📅</div><p>日付を選んでください</p></div>
-      </div>
-      <div class="m-composer" id="mComposer" style="display:none">
-        <div class="m-mood-row" id="mMoodRow"></div>
-        <textarea class="m-textarea" id="mComposerText" placeholder="今日のひとこと…" oninput="onMInput()" onkeydown="onComposerKey(event)"></textarea>
-        <div class="m-composer-row">
-          <div class="m-char" id="mCharCount">0 文字</div>
-          <button class="btn-post" id="mBtnPost" onclick="postMobile()" disabled>投稿</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Mobile TODO -->
-  <div class="m-page" id="mPageTodo">
-    <div class="m-todo-scroll">
-      <div class="m-todo-title">TODO</div>
-      <div class="section-tabs m-stabs">
-        <button class="stab active" id="mStabHabit" onclick="mSwitchTab('habit')">🔁 日課</button>
-        <button class="stab"        id="mStabTask"  onclick="mSwitchTab('task')">✅ タスク</button>
-      </div>
-      <div id="mTodoContent"></div>
-    </div>
-  </div>
-
-  <!-- Bottom nav -->
-  <nav class="m-bottomnav">
-    <button class="m-btn active" id="mBtnDiary" onclick="mSwitchPage('diary')">
-      <span class="m-btn-icon">📝</span>日記
-    </button>
-    <button class="m-btn" id="mBtnTodo" onclick="mSwitchPage('todo')">
-      <span class="m-btn-icon">☑</span>TODO
-    </button>
-  </nav>
+<!-- Bottom nav (mobile) -->
+<div class="bottom-nav" id="bottomNav" style="display:none">
+  <button class="bottom-nav-btn active" id="bnavDiary" onclick="switchPage('diary')">
+    <span class="bnav-icon">📝</span>日記
+  </button>
+  <button class="bottom-nav-btn" id="bnavTodo" onclick="switchPage('todo')">
+    <span class="bnav-icon">☑</span>TODO
+  </button>
+  <button class="bottom-nav-btn" id="bnavMemo" onclick="switchPage('memo')">
+    <span class="bnav-icon">📋</span>メモ
+  </button>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
+// ▼▼▼ Firebase設定 ▼▼▼
 const firebaseConfig = {
   apiKey:            "AIzaSyDW2-iwy4jjPNABIesVWnuRamlQrr7l_LM",
   authDomain:        "my-diary-9cf73.firebaseapp.com",
@@ -377,102 +438,133 @@ const firebaseConfig = {
   messagingSenderId: "907629158152",
   appId:             "1:907629158152:web:87f1fb061128334a2c16bd"
 };
+// ▲▲▲ ここまで ▲▲▲
+
 firebase.initializeApp(firebaseConfig);
-const auth=firebase.auth(), db=firebase.firestore(), gProvider=new firebase.auth.GoogleAuthProvider();
+const auth = firebase.auth();
+const db   = firebase.firestore();
+const gProvider = new firebase.auth.GoogleAuthProvider();
+
 let uid=null, unsubs=[];
 
 auth.onAuthStateChanged(user=>{
   if(user){
     uid=user.uid;
-    document.getElementById('loginScreen').style.display='none';
-    const mob=window.innerWidth<=680;
-    if(mob){ document.getElementById('mobileApp').style.display='flex'; document.getElementById('mAvatar').src=user.photoURL||''; }
-    else { document.getElementById('pcApp').style.display='grid'; document.getElementById('pcAvatar').src=user.photoURL||''; document.getElementById('pcName').textContent=user.displayName||user.email; }
-    startListeners(); initCal(); renderMoodRow(); renderMMoodRow(); selectDate(todayDs());
+    ['loginScreen'].forEach(id=>document.getElementById(id).style.display='none');
+    document.getElementById('appWrap').style.display='grid';
+    document.getElementById('mobileHeader').style.display='flex';
+    document.getElementById('bottomNav').style.display='flex';
+    document.getElementById('userAvatar').src=user.photoURL||'';
+    document.getElementById('userName').textContent=user.displayName||user.email;
+    const ma=document.getElementById('mobileAvatar'); if(ma) ma.src=user.photoURL||'';
+    startListeners(); initCal(); renderMoodRow(); selectDate(todayDs());
   } else {
     uid=null; stopListeners();
     document.getElementById('loginScreen').style.display='flex';
-    document.getElementById('pcApp').style.display='none';
-    document.getElementById('mobileApp').style.display='none';
+    document.getElementById('appWrap').style.display='none';
+    document.getElementById('mobileHeader').style.display='none';
+    document.getElementById('bottomNav').style.display='none';
   }
 });
-function doLogin(){auth.signInWithPopup(gProvider).catch(e=>{document.getElementById('loginError').style.display='block';console.error(e);});}
-function doLogout(){auth.signOut();}
 
-function col(n){return db.collection('users').doc(uid).collection(n);}
+function doLogin(){ auth.signInWithPopup(gProvider).catch(e=>{ document.getElementById('loginError').style.display='block'; console.error(e); }); }
+function doLogout(){ auth.signOut(); }
+
+function col(name){ return db.collection('users').doc(uid).collection(name); }
+
 function startListeners(){
   stopListeners();
-  const L=(n,set,r)=>{const u=col(n).onSnapshot(s=>{set(s.docs.map(d=>({id:d.id,...d.data()})));r();});unsubs.push(u);};
-  const LD=(n,set,r)=>{const u=col(n).doc('data').onSnapshot(s=>{set(s.exists?(s.data().value??{}):{});r();});unsubs.push(u);};
-  L('posts',  v=>{posts=v;},  ()=>{renderCal();renderMCal();renderSide();renderPosts();renderMPosts();});
-  L('habits', v=>{habits=v;}, ()=>{renderHabits();renderMTodo();});
-  L('tasks',  v=>{tasks=v;},  ()=>{renderTasks();renderMTodo();});
-  LD('hlog',  v=>{hlog=v;},   ()=>{renderHabits();renderMTodo();});
+  const L=(name,setter,renderer)=>{ const u=col(name).onSnapshot(snap=>{ setter(snap.docs.map(d=>({id:d.id,...d.data()}))); renderer(); }); unsubs.push(u); };
+  const LD=(name,setter,renderer)=>{ const u=col(name).doc('data').onSnapshot(snap=>{ setter(snap.exists?(snap.data().value??{}):{} ); renderer(); }); unsubs.push(u); };
+  L('posts',  v=>{posts=v;},  ()=>{renderCal();renderSide();renderPosts();});
+  L('habits', v=>{habits=v;}, ()=>{if(curPage==='todo'&&curTab==='habit') renderHabits();});
+  L('tasks',  v=>{tasks=v;},  ()=>{if(curPage==='todo'&&curTab==='task')  renderTasks();});
+  L('ents',   v=>{ents=v;},   ()=>{if(curPage==='todo'&&curTab==='ent')   renderEnts();});
+  L('memos',  v=>{memos=v;},  ()=>{if(curPage==='memo') renderMemos();});
+  LD('hlog',  v=>{hlog=v;},   ()=>{if(curPage==='todo'&&curTab==='habit') renderHabits();});
 }
-function stopListeners(){unsubs.forEach(u=>u());unsubs=[];}
-async function fsAdd(n,d){await col(n).doc(d.id).set(d);}
-async function fsDel(n,id){await col(n).doc(id).delete();}
-async function fsSet(n,d){await col(n).doc(d.id).set(d,{merge:true});}
-async function fsSetHlog(h){await col('hlog').doc('data').set({value:h});}
+function stopListeners(){ unsubs.forEach(u=>u()); unsubs=[]; }
 
-let posts=[],habits=[],hlog={},tasks=[];
+async function fsAdd(n,d){ await col(n).doc(d.id).set(d); }
+async function fsDel(n,id){ await col(n).doc(id).delete(); }
+async function fsSet(n,d){ await col(n).doc(d.id).set(d,{merge:true}); }
+async function fsSetHlog(v){ await col('hlog').doc('data').set({value:v}); }
+
+// State
+let posts=[],habits=[],hlog={},tasks=[],ents=[],memos=[];
 const MOODS=['😊','😌','😢','😤','😴','🤩'];
-let calYear,calMonth,selDate=null,selMood='',curPage='diary',curTab='habit',mCurTab='habit';
+const ENT_CATS=['映画','ドラマ','アニメ','ゲーム','本','音楽','その他'];
+const CAT_ICONS={'映画':'🎬','ドラマ':'📺','アニメ':'✨','ゲーム':'🎮','本':'📚','音楽':'🎵','その他':'💡'};
+let calYear,calMonth,selDate=null,selMood='',curPage='diary',curTab='habit',memoImgData=null,memoTagFilter='';
 
-function pad(n){return String(n).padStart(2,'0');}
-function todayDs(){const d=new Date();return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;}
-function fmtDate(s){const[y,m,d]=s.split('-');const dow=new Date(+y,+m-1,+d).getDay();return `${y}年${Number(m)}月${Number(d)}日（${'日月火水木金土'[dow]}）`;}
-function fmtTime(ts){const d=new Date(ts);return `${pad(d.getHours())}:${pad(d.getMinutes())}`;}
-function genId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
-function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-function cap(s){return s[0].toUpperCase()+s.slice(1);}
-function calcStreak(id){const log=hlog[id]||{};let s=0,d=new Date();const ds=x=>`${x.getFullYear()}-${pad(x.getMonth()+1)}-${pad(x.getDate())}`;if(!log[ds(d)])d.setDate(d.getDate()-1);while(log[ds(d)]){s++;d.setDate(d.getDate()-1);}return s;}
+function pad(n){ return String(n).padStart(2,'0'); }
+function todayDs(){ const d=new Date(); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
+function fmtDate(s){ const[y,m,d]=s.split('-'); const dow=new Date(+y,+m-1,+d).getDay(); return `${y}年${Number(m)}月${Number(d)}日（${'日月火水木金土'[dow]}）`; }
+function fmtTime(ts){ const d=new Date(ts); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; }
+function fmtDateTime(ts){ const d=new Date(ts); return `${d.getFullYear()}/${pad(d.getMonth()+1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`; }
+function genId(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function cap(s){ return s[0].toUpperCase()+s.slice(1); }
 
-// PC nav
+function calcStreak(id){
+  const log=hlog[id]||{}; let st=0;
+  let d=new Date(); if(!log[todayDs()]) d.setDate(d.getDate()-1);
+  const ds=x=>`${x.getFullYear()}-${pad(x.getMonth()+1)}-${pad(x.getDate())}`;
+  while(log[ds(d)]){ st++; d.setDate(d.getDate()-1); }
+  return st;
+}
+
+// Page switch
 function switchPage(page){
   curPage=page;
-  ['diary','todo'].forEach(p=>{document.getElementById('page'+cap(p)).classList.toggle('active',p===page);document.getElementById('nav'+cap(p)).classList.toggle('active',p===page);});
-  document.getElementById('calWrap').style.display=page==='diary'?'':'none';
-  document.getElementById('datePanel').style.display=page==='diary'?'':'none';
-  if(page==='todo')renderTodoPage();
-}
-function switchTab(tab){
-  curTab=tab;
-  ['habit','task'].forEach(t=>{document.getElementById('section'+cap(t)).classList.toggle('active',t===tab);document.getElementById('stab'+cap(t)).classList.toggle('active',t===tab);});
-  if(tab==='habit')renderHabits();else renderTasks();
+  ['diary','todo','memo'].forEach(p=>{
+    const pg=document.getElementById('page'+cap(p)); if(pg) pg.classList.toggle('active',p===page);
+    const nv=document.getElementById('nav'+cap(p)); if(nv) nv.classList.toggle('active',p===page);
+    const bn=document.getElementById('bnav'+cap(p)); if(bn) bn.classList.toggle('active',p===page);
+  });
+  const isDiary=page==='diary';
+  document.getElementById('calWrap').style.display   = isDiary?'':'none';
+  document.getElementById('datePanel').style.display = isDiary?'':'none';
+  const mc=document.getElementById('mobileCal'); if(mc) mc.style.display=isDiary?'':'none';
+  if(page==='todo') renderTodoPage();
+  if(page==='memo') renderMemos();
 }
 
-// Mobile nav
-function mSwitchPage(page){
-  ['diary','todo'].forEach(p=>{document.getElementById('mPage'+cap(p)).classList.toggle('active',p===page);document.getElementById('mBtn'+cap(p)).classList.toggle('active',p===page);});
-  if(page==='todo')renderMTodo();
-}
-function mSwitchTab(tab){
-  mCurTab=tab;
-  ['habit','task'].forEach(t=>{document.getElementById('mStab'+cap(t)).classList.toggle('active',t===tab);});
-  renderMTodo();
+// Tab switch
+function switchTab(tab){
+  curTab=tab;
+  ['habit','task','ent'].forEach(t=>{
+    document.getElementById('section'+cap(t)).classList.toggle('active',t===tab);
+    document.getElementById('stab'+cap(t)).classList.toggle('active',t===tab);
+  });
+  if(tab==='habit') renderHabits();
+  else if(tab==='task') renderTasks();
+  else renderEnts();
 }
 
 // Calendar
-function initCal(){const n=new Date();calYear=n.getFullYear();calMonth=n.getMonth();renderCal();renderMCal();}
-function buildCalHTML(pfx){
-  const cm={};posts.forEach(p=>{cm[p.date]=(cm[p.date]||0)+1;});
+function initCal(){ const n=new Date(); calYear=n.getFullYear(); calMonth=n.getMonth(); renderCal(); }
+function renderCal(){
+  document.getElementById('calTitle').textContent=`${calYear}年${calMonth+1}月`;
+  const cm={}; posts.forEach(p=>{cm[p.date]=(cm[p.date]||0)+1;});
   const today=todayDs(),sd=new Date(calYear,calMonth,1).getDay(),tot=new Date(calYear,calMonth+1,0).getDate();
-  let h='日月火水木金土'.split('').map(l=>`<div class="${pfx}label">${l}</div>`).join('');
-  for(let i=0;i<sd;i++)h+=`<div class="${pfx}cell empty"></div>`;
+  let h='日月火水木金土'.split('').map(l=>`<div class="cal-label">${l}</div>`).join('');
+  for(let i=0;i<sd;i++) h+=`<div class="cal-cell empty"></div>`;
   for(let d=1;d<=tot;d++){
-    const s=`${calYear}-${pad(calMonth+1)}-${pad(d)}`;const cnt=cm[s]||0;
-    const cls=[`${pfx}cell`,s===today?'today':'',s===selDate?'selected':'',cnt>0?'has-posts':''].filter(Boolean).join(' ');
-    h+=`<div class="${cls}" onclick="selectDate('${s}')"><div class="${pfx}num">${d}</div><div class="${pfx}count">${cnt||''}</div></div>`;
+    const s=`${calYear}-${pad(calMonth+1)}-${pad(d)}`;
+    const cnt=cm[s]||0;
+    const cls=['cal-cell',s===today?'today':'',s===selDate?'selected':'',cnt>0?'has-posts':''].filter(Boolean).join(' ');
+    h+=`<div class="${cls}" onclick="selectDate('${s}')"><div class="cal-num">${d}</div><div class="cal-count">${cnt||''}</div></div>`;
   }
-  return h;
+  document.getElementById('calGrid').innerHTML=h;
+  const tM=document.getElementById('calTitleM'),gM=document.getElementById('calGridM');
+  if(tM) tM.textContent=`${calYear}年${calMonth+1}月`;
+  if(gM) gM.innerHTML=h;
 }
-function renderCal(){document.getElementById('calTitle').textContent=`${calYear}年${calMonth+1}月`;document.getElementById('calGrid').innerHTML=buildCalHTML('cal-');}
-function renderMCal(){const t=document.getElementById('mCalTitle'),g=document.getElementById('mCalGrid');if(!t||!g)return;t.textContent=`${calYear}年${calMonth+1}月`;g.innerHTML=buildCalHTML('m-cal-');}
-function moveCal(dir){calMonth+=dir;if(calMonth<0){calMonth=11;calYear--;}if(calMonth>11){calMonth=0;calYear++;}renderCal();renderMCal();}
-function selectDate(s){selDate=s;renderCal();renderMCal();renderSide();renderMain();renderMPosts();}
+function moveCal(dir){ calMonth+=dir; if(calMonth<0){calMonth=11;calYear--;} if(calMonth>11){calMonth=0;calYear++;} renderCal(); }
+function selectDate(s){ selDate=s; renderCal(); renderSide(); renderMain(); }
 
-// PC sidebar
+// Sidebar
 function renderSide(){
   const noMsg=document.getElementById('noDateMsg'),side=document.getElementById('sidePosts');
   if(!selDate){noMsg.style.display='';side.innerHTML='';return;}
@@ -483,11 +575,11 @@ function renderSide(){
     day.map(p=>`<div class="post-item"><div class="post-item-time">${fmtTime(p.createdAt)}</div><div class="post-item-body">${esc(p.body)}</div>${p.mood?`<div class="post-item-mood">${p.mood}</div>`:''}<button class="post-del" onclick="delPost('${p.id}')">×</button></div>`).join('');
 }
 
-// PC main
+// Main
 function renderMain(){
   const noEl=document.getElementById('noDaySel'),mainEl=document.getElementById('diaryMain');
   if(!selDate){noEl.style.display='flex';mainEl.style.display='none';return;}
-  noEl.style.display='none';mainEl.style.display='flex';
+  noEl.style.display='none'; mainEl.style.display='flex';
   document.getElementById('mainDateTitle').textContent=fmtDate(selDate);
   document.getElementById('composerLabel').textContent=fmtDate(selDate);
   renderPosts();
@@ -499,98 +591,158 @@ function renderPosts(){
   area.innerHTML=day.map(p=>`<div class="post-card"><div class="post-card-header"><div class="post-card-time">${fmtTime(p.createdAt)}</div>${p.mood?`<div class="post-card-mood">${p.mood}</div>`:''}<button class="post-card-del" onclick="delPost('${p.id}')">削除</button></div><div class="post-card-body">${esc(p.body)}</div></div>`).join('');
 }
 
-// Mobile posts
-function renderMPosts(){
-  const area=document.getElementById('mPostsArea'),comp=document.getElementById('mComposer');
-  if(!area)return;
-  if(!selDate){area.innerHTML=`<div class="m-empty"><div class="ei">📅</div><p>日付を選んでください</p></div>`;if(comp)comp.style.display='none';return;}
-  if(comp)comp.style.display='';
-  const day=posts.filter(p=>p.date===selDate).sort((a,b)=>a.createdAt-b.createdAt);
-  let h=`<div class="m-date-label">${fmtDate(selDate)}</div>`;
-  if(!day.length)h+=`<div class="m-empty"><div class="ei">✏️</div><p>この日の投稿はまだありません</p></div>`;
-  else h+=day.map(p=>`<div class="m-post-card"><div class="m-post-header"><div class="m-post-time">${fmtTime(p.createdAt)}</div>${p.mood?`<div class="m-post-mood">${p.mood}</div>`:''}<button class="m-post-del" onclick="delPost('${p.id}')">削除</button></div><div class="m-post-body">${esc(p.body)}</div></div>`).join('');
-  area.innerHTML=h;
-}
-
-// Post
-function onComposerKey(e){if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();postEntry();}}
+function onComposerKey(e){ if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();postEntry();} }
 async function postEntry(){
-  const text=document.getElementById('composerText').value.trim();if(!text||!selDate||!uid)return;
+  const text=document.getElementById('composerText').value.trim();
+  if(!text||!selDate||!uid) return;
   const p={id:genId(),date:selDate,body:text,mood:selMood,createdAt:Date.now()};
-  document.getElementById('composerText').value='';selMood='';renderMoodRow();onInput();
+  document.getElementById('composerText').value=''; selMood=''; renderMoodRow(); onInput();
   await fsAdd('posts',p);
 }
-async function postMobile(){
-  const text=document.getElementById('mComposerText').value.trim();if(!text||!selDate||!uid)return;
-  const p={id:genId(),date:selDate,body:text,mood:selMood,createdAt:Date.now()};
-  document.getElementById('mComposerText').value='';selMood='';renderMMoodRow();onMInput();
-  await fsAdd('posts',p);
+async function delPost(id){ await fsDel('posts',id); }
+function onInput(){ const v=document.getElementById('composerText').value; document.getElementById('charCount').textContent=`${v.length} 文字`; document.getElementById('btnPost').disabled=!v.trim(); }
+
+function renderMoodRow(){
+  const row=document.getElementById('moodRow'); row.innerHTML='';
+  MOODS.forEach(m=>{ const b=document.createElement('button'); b.className='mood-btn'+(selMood===m?' active':''); b.textContent=m; b.onclick=()=>{selMood=selMood===m?'':m;renderMoodRow();}; row.appendChild(b); });
 }
-async function delPost(id){await fsDel('posts',id);}
-function onInput(){const v=document.getElementById('composerText').value;document.getElementById('charCount').textContent=`${v.length} 文字`;document.getElementById('btnPost').disabled=!v.trim();}
-function onMInput(){const v=document.getElementById('mComposerText').value;document.getElementById('mCharCount').textContent=`${v.length} 文字`;document.getElementById('mBtnPost').disabled=!v.trim();}
 
-// Mood
-function renderMoodRow(){const row=document.getElementById('moodRow');if(!row)return;row.innerHTML='';MOODS.forEach(m=>{const b=document.createElement('button');b.className='mood-btn'+(selMood===m?' active':'');b.textContent=m;b.onclick=()=>{selMood=selMood===m?'':m;renderMoodRow();renderMMoodRow();};row.appendChild(b);});}
-function renderMMoodRow(){const row=document.getElementById('mMoodRow');if(!row)return;row.innerHTML='';MOODS.forEach(m=>{const b=document.createElement('button');b.className='mood-btn'+(selMood===m?' active':'');b.textContent=m;b.onclick=()=>{selMood=selMood===m?'':m;renderMoodRow();renderMMoodRow();};row.appendChild(b);});}
+// TODO
+function renderTodoPage(){ if(curTab==='habit') renderHabits(); else if(curTab==='task') renderTasks(); else renderEnts(); }
 
-// PC TODO
-function renderTodoPage(){if(curTab==='habit')renderHabits();else renderTasks();}
-function habitItemHTML(h){const today=todayDs();const done=(hlog[h.id]||{})[today]===true;const streak=calcStreak(h.id);return `<div class="habit-item"><div class="habit-check ${done?'checked':''}" onclick="toggleHabit('${h.id}')">${done?'✓':''}</div><div class="habit-name">${esc(h.name)}</div>${streak>0?`<div class="habit-streak">🔥${streak}日</div>`:''}<button class="item-del" onclick="delHabit('${h.id}')">×</button></div>`;}
+// Habits
 function renderHabits(){
-  const el=document.getElementById('habitList');if(!el)return;
+  const today=todayDs(),el=document.getElementById('habitList');
   if(!habits.length){el.innerHTML=`<div class="empty-section">日課を追加してください</div>`;document.getElementById('habitCalWrap').style.display='none';return;}
-  el.innerHTML=habits.map(habitItemHTML).join('');
+  el.innerHTML=habits.map(h=>{const done=(hlog[h.id]||{})[today]===true;const st=calcStreak(h.id);
+    return `<div class="habit-item"><div class="habit-check ${done?'checked':''}" onclick="toggleHabit('${h.id}')">${done?'✓':''}</div><div class="habit-name">${esc(h.name)}</div>${st>0?`<div class="habit-streak">🔥${st}日</div>`:''}<button class="item-del" onclick="delHabit('${h.id}')">×</button></div>`;
+  }).join('');
   document.getElementById('habitCalWrap').style.display='';
-  const sel=document.getElementById('habitSelect');const cv=sel.value;
+  const sel=document.getElementById('habitSelect'),curVal=sel.value;
   sel.innerHTML=habits.map(h=>`<option value="${h.id}">${esc(h.name)}</option>`).join('');
-  if(cv&&habits.find(h=>h.id===cv))sel.value=cv;
+  if(curVal&&habits.find(h=>h.id===curVal)) sel.value=curVal;
   renderHabitCal();
 }
 function renderHabitCal(){
-  const sel=document.getElementById('habitSelect');if(!sel)return;const hid=sel.value;if(!hid)return;
-  const log=hlog[hid]||{},today=todayDs();
-  const now=new Date(),y=now.getFullYear(),m=now.getMonth();
+  const sel=document.getElementById('habitSelect'),hid=sel.value; if(!hid) return;
+  const log=hlog[hid]||{},today=todayDs(),now=new Date(),y=now.getFullYear(),m=now.getMonth();
   const sd=new Date(y,m,1).getDay(),tot=new Date(y,m+1,0).getDate();
   let h='日月火水木金土'.split('').map(l=>`<div class="hm-label">${l}</div>`).join('');
-  for(let i=0;i<sd;i++)h+=`<div class="hm-cell empty"></div>`;
+  for(let i=0;i<sd;i++) h+=`<div class="hm-cell empty"></div>`;
   for(let d=1;d<=tot;d++){const s=`${y}-${pad(m+1)}-${pad(d)}`;const done=log[s]===true;const fut=s>today;h+=`<div class="hm-cell ${done?'done':''} ${fut?'future':''}">${done?'✓':d}</div>`;}
   document.getElementById('habitMonthGrid').innerHTML=h;
 }
-async function toggleHabit(id){const today=todayDs();const nh=JSON.parse(JSON.stringify(hlog));if(!nh[id])nh[id]={};nh[id][today]=!nh[id][today];if(!nh[id][today])delete nh[id][today];await fsSetHlog(nh);}
-async function addHabit(){const inp=document.getElementById('habitInput');const name=inp.value.trim();if(!name)return;await fsAdd('habits',{id:genId(),name,createdAt:Date.now()});inp.value='';}
-async function delHabit(id){await fsDel('habits',id);const nh=JSON.parse(JSON.stringify(hlog));delete nh[id];await fsSetHlog(nh);}
+async function toggleHabit(id){
+  const today=todayDs(),nh=JSON.parse(JSON.stringify(hlog));
+  if(!nh[id]) nh[id]={};
+  nh[id][today]=!nh[id][today]; if(!nh[id][today]) delete nh[id][today];
+  await fsSetHlog(nh);
+}
+async function addHabit(){ const inp=document.getElementById('habitInput'),name=inp.value.trim(); if(!name) return; await fsAdd('habits',{id:genId(),name,createdAt:Date.now()}); inp.value=''; }
+async function delHabit(id){ await fsDel('habits',id); const nh=JSON.parse(JSON.stringify(hlog)); delete nh[id]; await fsSetHlog(nh); }
 
-function taskItemHTML(t){const today=todayDs();let dueHtml=t.due?`<div class="task-due ${!t.done&&t.due<today?'overdue':''}">${t.due}</div>`:`<input class="task-due-input" type="date" value="" onchange="setDue('${t.id}',this.value)" title="期限">`;return `<div class="task-item ${t.done?'done':''}"><div class="task-check ${t.done?'checked':''}" onclick="toggleTask('${t.id}')">${t.done?'✓':''}</div><input class="task-text" value="${esc(t.text)}" oninput="editTask('${t.id}',this.value)">${dueHtml}<button class="item-del" onclick="delTask('${t.id}')">×</button></div>`;}
+// Tasks
 function renderTasks(){
-  const undone=tasks.filter(t=>!t.done),done=tasks.filter(t=>t.done);
-  document.getElementById('taskUndone').innerHTML=undone.length?`<div class="section-label">未完了 ${undone.length}</div>${undone.map(taskItemHTML).join('')}`:`<div class="empty-section">タスクはありません</div>`;
-  document.getElementById('taskDone').innerHTML=done.length?`<div class="section-label">完了済み ${done.length}</div>${done.map(taskItemHTML).join('')}`:'';
+  const undone=tasks.filter(t=>!t.done),done=tasks.filter(t=>t.done),today=todayDs();
+  const makeItem=t=>{let dueHtml=t.due?`<div class="task-due ${!t.done&&t.due<today?'overdue':''}">${t.due}</div>`:`<input class="task-due-input" type="date" value="" onchange="setDue('${t.id}',this.value)" title="期限を設定">`;
+    return `<div class="task-item ${t.done?'done':''}"><div class="task-check ${t.done?'checked':''}" onclick="toggleTask('${t.id}')">${t.done?'✓':''}</div><input class="task-text" value="${esc(t.text)}" oninput="editTask('${t.id}',this.value)">${dueHtml}<button class="item-del" onclick="delTask('${t.id}')">×</button></div>`;};
+  document.getElementById('taskUndone').innerHTML=undone.length?`<div class="section-label">未完了 ${undone.length}</div>${undone.map(makeItem).join('')}`:`<div class="empty-section">タスクはありません</div>`;
+  document.getElementById('taskDone').innerHTML=done.length?`<div class="section-label">完了済み ${done.length}</div>${done.map(makeItem).join('')}`:'';
 }
-async function addTask(){const inp=document.getElementById('taskInput');const text=inp.value.trim();if(!text)return;await fsAdd('tasks',{id:genId(),text,done:false,due:'',createdAt:Date.now()});inp.value='';}
-async function toggleTask(id){const t=tasks.find(t=>t.id===id);if(t)await fsSet('tasks',{id,done:!t.done});}
-async function editTask(id,val){await fsSet('tasks',{id,text:val});}
-async function setDue(id,val){await fsSet('tasks',{id,due:val});}
-async function delTask(id){await fsDel('tasks',id);}
+async function addTask(){ const inp=document.getElementById('taskInput'),text=inp.value.trim(); if(!text) return; await fsAdd('tasks',{id:genId(),text,done:false,due:'',createdAt:Date.now()}); inp.value=''; }
+async function toggleTask(id){ const t=tasks.find(t=>t.id===id); if(t) await fsSet('tasks',{id,done:!t.done}); }
+async function editTask(id,val){ await fsSet('tasks',{id,text:val}); }
+async function setDue(id,val){ await fsSet('tasks',{id,due:val}); }
+async function delTask(id){ await fsDel('tasks',id); }
 
-// Mobile TODO
-function renderMTodo(){
-  const el=document.getElementById('mTodoContent');if(!el)return;
-  if(mCurTab==='habit'){
-    const addRow=`<div class="add-row"><input class="add-input" id="mHabitInput" type="text" placeholder="日課を追加…" onkeydown="if(event.key==='Enter')mAddHabit()"><button class="btn-add" onclick="mAddHabit()">追加</button></div>`;
-    el.innerHTML=addRow+(habits.length?habits.map(habitItemHTML).join(''):`<div class="empty-section">日課を追加してください</div>`);
-  } else {
-    const undone=tasks.filter(t=>!t.done),done=tasks.filter(t=>t.done);
-    const addRow=`<div class="add-row"><input class="add-input" id="mTaskInput" type="text" placeholder="タスクを追加…" onkeydown="if(event.key==='Enter')mAddTask()"><button class="btn-add" onclick="mAddTask()">追加</button></div>`;
-    el.innerHTML=addRow+
-      (undone.length?`<div class="section-label">未完了 ${undone.length}</div>${undone.map(taskItemHTML).join('')}`:`<div class="empty-section">タスクはありません</div>`)+
-      (done.length?`<div class="section-label" style="margin-top:16px">完了済み ${done.length}</div>${done.map(taskItemHTML).join('')}`:'');
-  }
+// Entertainment
+function renderEnts(){
+  const el=document.getElementById('entList');
+  if(!ents.length){el.innerHTML=`<div class="empty-section">娯楽リストを追加してください</div>`;return;}
+  const sorted=[...ents].sort((a,b)=>a.createdAt-b.createdAt);
+  const unwatched=sorted.filter(e=>!e.done),watched=sorted.filter(e=>e.done);
+  const makeItem=e=>`<div class="ent-item ${e.done?'watched':''}">
+    <div class="ent-done ${e.done?'checked':''}" onclick="toggleEnt('${e.id}')">${e.done?'✓':''}</div>
+    <div class="ent-cat">${CAT_ICONS[e.cat]||'💡'} ${e.cat}</div>
+    <div class="ent-title">${esc(e.title)}</div>
+    <button class="item-del" onclick="delEnt('${e.id}')">×</button>
+  </div>`;
+  el.innerHTML=unwatched.map(makeItem).join('')+(watched.length?`<div class="section-label" style="margin-top:16px">済み ${watched.length}</div>${watched.map(makeItem).join('')}`:'');
 }
-async function mAddHabit(){const inp=document.getElementById('mHabitInput');if(!inp)return;const name=inp.value.trim();if(!name)return;await fsAdd('habits',{id:genId(),name,createdAt:Date.now()});inp.value='';}
-async function mAddTask(){const inp=document.getElementById('mTaskInput');if(!inp)return;const text=inp.value.trim();if(!text)return;await fsAdd('tasks',{id:genId(),text,done:false,due:'',createdAt:Date.now()});inp.value='';}
+async function addEnt(){
+  const inp=document.getElementById('entInput'),title=inp.value.trim();
+  const cat=document.getElementById('entCat').value;
+  if(!title) return;
+  await fsAdd('ents',{id:genId(),title,cat,done:false,createdAt:Date.now()});
+  inp.value='';
+}
+async function toggleEnt(id){ const e=ents.find(e=>e.id===id); if(e) await fsSet('ents',{id,done:!e.done}); }
+async function delEnt(id){ await fsDel('ents',id); }
 
-function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000);}
+// Memo
+function onMemoImg(event){
+  const file=event.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    memoImgData=e.target.result;
+    const prev=document.getElementById('memoPreviewImg');
+    prev.src=memoImgData; prev.style.display='block';
+  };
+  reader.readAsDataURL(file);
+}
+
+async function saveMemo(){
+  const text=document.getElementById('memoText').value.trim();
+  if(!text&&!memoImgData) return;
+  const tagRaw=document.getElementById('memoTagInput').value;
+  const tags=tagRaw.split(',').map(t=>t.trim()).filter(Boolean);
+  const memo={id:genId(),text,tags,img:memoImgData||'',createdAt:Date.now()};
+  await fsAdd('memos',memo);
+  document.getElementById('memoText').value='';
+  document.getElementById('memoTagInput').value='';
+  document.getElementById('memoPreviewImg').style.display='none';
+  document.getElementById('memoImgInput').value='';
+  memoImgData=null;
+  showToast('メモを保存しました');
+}
+
+async function delMemo(id){ await fsDel('memos',id); }
+
+function setMemoTagFilter(tag){
+  memoTagFilter=memoTagFilter===tag?'':tag;
+  renderMemos();
+}
+
+function renderMemos(){
+  // Collect all tags
+  const allTags=new Set();
+  memos.forEach(m=>(m.tags||[]).forEach(t=>allTags.add(t)));
+  const filterEl=document.getElementById('memoTagFilter');
+  filterEl.innerHTML=[...allTags].map(t=>`<button class="tag-chip ${memoTagFilter===t?'active':''}" onclick="setMemoTagFilter('${esc(t)}')">${esc(t)}</button>`).join('');
+
+  let list=[...memos].sort((a,b)=>b.createdAt-a.createdAt);
+  if(memoTagFilter) list=list.filter(m=>(m.tags||[]).includes(memoTagFilter));
+
+  const el=document.getElementById('memoList');
+  if(!list.length){el.innerHTML=`<div class="empty-section">メモがありません</div>`;return;}
+  el.innerHTML=list.map(m=>`
+    <div class="memo-card">
+      <div class="memo-card-header">
+        <div class="memo-card-date">${fmtDateTime(m.createdAt)}</div>
+        <div class="memo-card-tags">${(m.tags||[]).map(t=>`<span class="memo-tag">${esc(t)}</span>`).join('')}</div>
+        <button class="memo-card-del" onclick="delMemo('${m.id}')">削除</button>
+      </div>
+      ${m.text?`<div class="memo-card-body">${esc(m.text)}</div>`:''}
+      ${m.img?`<img class="memo-card-img" src="${m.img}" alt="">`:''}
+    </div>
+  `).join('');
+}
+
+// Toast
+function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2000); }
+
+// Keyboard
+document.addEventListener('keydown',e=>{ if((e.metaKey||e.ctrlKey)&&e.key==='s'){e.preventDefault();if(curPage==='diary'&&selDate) postEntry();} });
 </script>
 </body>
 </html>
