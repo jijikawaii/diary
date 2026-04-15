@@ -346,6 +346,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
         <div class="stabs">
           <button class="stab active" id="stabHabit" onclick="switchTab('habit')">🔁 日課</button>
           <button class="stab"        id="stabTask"  onclick="switchTab('task')">✅ タスク</button>
+          <button class="stab"        id="stabAssign" onclick="switchTab('assign')">📝 課題</button>
           <button class="stab"        id="stabEnt"   onclick="switchTab('ent')">🎮 娯楽</button>
         </div>
 
@@ -371,6 +372,18 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
           </div>
           <div id="taskUndone"></div>
           <div class="done-sec" id="taskDone"></div>
+        </div>
+
+        <!-- Assignment -->
+        <div class="tsec" id="secAssign">
+          <div class="add-row">
+            <input class="add-input" id="assignInp" type="text" placeholder="課題を追加…" onkeydown="if(event.key==='Enter')addAssign()">
+            <input class="add-input" style="max-width:130px" id="assignSubInp" type="text" placeholder="教科（例：数学）">
+            <input type="date" class="add-sel" id="assignDue" title="締め切り">
+            <button class="btn-add" onclick="addAssign()">追加</button>
+          </div>
+          <div id="assignUndone"></div>
+          <div class="done-sec" id="assignDone"></div>
         </div>
 
         <!-- Entertainment -->
@@ -482,6 +495,7 @@ function startListeners(){
   L('posts',  v=>{posts=v;},  ()=>{renderCal();renderSide();renderPosts();});
   L('habits', v=>{habits=v;}, ()=>{if(curPage==='todo'&&curTab==='habit')renderHabits();});
   L('tasks',  v=>{tasks=v;},  ()=>{if(curPage==='todo'&&curTab==='task')renderTasks();});
+  L('assigns',v=>{assigns=v;},()=>{if(curPage==='todo'&&curTab==='assign')renderAssigns();});
   L('ents',   v=>{ents=v;},   ()=>{if(curPage==='todo'&&curTab==='ent')renderEnts();});
   L('memos',  v=>{memos=v;},  ()=>{if(curPage==='memo')renderMemos();});
   LD('hlog',  v=>{hlog=v;},   ()=>{if(curPage==='todo'&&curTab==='habit')renderHabits();});
@@ -493,7 +507,7 @@ async function fsSet(n,d){await col(n).doc(d.id).set(d,{merge:true});}
 async function fsHL(v){await col('hlog').doc('data').set({value:v});}
 
 // ── State ──
-let posts=[],habits=[],hlog={},tasks=[],ents=[],memos=[];
+let posts=[],habits=[],hlog={},tasks=[],assigns=[],ents=[],memos=[];
 const MOODS=['😊','😌','😢','😤','😴','🤩'];
 const ENT_CATS=['すべて','映画','ゲーム','本','アニメ','音楽','その他'];
 let calYear,calMonth,selDate=null,selMood='',curPage='diary',curTab='habit';
@@ -525,11 +539,11 @@ function switchPage(page){
 }
 function switchTab(tab){
   curTab=tab;
-  ['habit','task','ent'].forEach(t=>{
+  ['habit','task','assign','ent'].forEach(t=>{
     const se=document.getElementById('sec'+cap(t));if(se)se.classList.toggle('active',t===tab);
     const st=document.getElementById('stab'+cap(t));if(st)st.classList.toggle('active',t===tab);
   });
-  if(tab==='habit')renderHabits();else if(tab==='task')renderTasks();else renderEnts();
+  if(tab==='habit')renderHabits();else if(tab==='task')renderTasks();else if(tab==='assign')renderAssigns();else renderEnts();
 }
 
 // ── Calendar ──
@@ -596,7 +610,7 @@ function renderMoodRow(){
 }
 
 // ── TODO ──
-function renderTodoPage(){if(curTab==='habit')renderHabits();else if(curTab==='task')renderTasks();else renderEnts();}
+function renderTodoPage(){if(curTab==='habit')renderHabits();else if(curTab==='task')renderTasks();else if(curTab==='assign')renderAssigns();else renderEnts();}
 
 // ── Habits ──
 function calcStreak(id){
@@ -648,6 +662,39 @@ async function toggleTask(id){const t=tasks.find(t=>t.id===id);if(t)await fsSet(
 async function editTask(id,val){await fsSet('tasks',{id,text:val});}
 async function setDue(id,val){await fsSet('tasks',{id,due:val});}
 async function delTask(id){await fsDel('tasks',id);}
+
+// ── Assigns ──
+function renderAssigns(){
+  const today=todayDs();
+  const undone=assigns.filter(a=>!a.done).sort((a,b)=>{ if(!a.due&&!b.due)return 0; if(!a.due)return 1; if(!b.due)return -1; return a.due.localeCompare(b.due); });
+  const done=assigns.filter(a=>a.done);
+  const makeItem=a=>{
+    const overdue=!a.done&&a.due&&a.due<today;
+    return `<div class="task-item ${a.done?'done':''}">
+      <div class="task-check ${a.done?'checked':''}" onclick="toggleAssign('${a.id}')">${a.done?'✓':''}</div>
+      ${a.subject?`<div class="task-due" style="background:var(--accent-light);color:var(--accent);border-radius:5px;padding:1px 8px;font-size:11px;">${esc(a.subject)}</div>`:''}
+      <input class="task-text" value="${esc(a.text)}" oninput="editAssign('${a.id}',this.value)">
+      ${a.due?`<div class="task-due ${overdue?'overdue':''}" title="締め切り">📅 ${a.due}</div>`:''}
+      <button class="item-del" onclick="delAssign('${a.id}')">×</button>
+    </div>`;
+  };
+  document.getElementById('assignUndone').innerHTML=undone.length
+    ?`<div class="section-label">未完了 ${undone.length}</div>${undone.map(makeItem).join('')}`
+    :'<div style="text-align:center;color:var(--muted);font-size:13px;padding:20px 0">課題はありません🎉</div>';
+  document.getElementById('assignDone').innerHTML=done.length
+    ?`<div class="section-label" style="margin-top:16px">完了 ${done.length}</div>${done.map(makeItem).join('')}`:'';
+}
+async function addAssign(){
+  const inp=document.getElementById('assignInp'),text=inp.value.trim();
+  if(!text)return;
+  const sub=document.getElementById('assignSubInp').value.trim();
+  const due=document.getElementById('assignDue').value;
+  await fsAdd('assigns',{id:genId(),text,subject:sub,due,done:false,createdAt:Date.now()});
+  inp.value=''; document.getElementById('assignSubInp').value=''; document.getElementById('assignDue').value='';
+}
+async function toggleAssign(id){const a=assigns.find(a=>a.id===id);if(a)await fsSet('assigns',{id,done:!a.done});}
+async function editAssign(id,val){await fsSet('assigns',{id,text:val});}
+async function delAssign(id){await fsDel('assigns',id);}
 
 // ── Entertainment ──
 function renderEnts(){
