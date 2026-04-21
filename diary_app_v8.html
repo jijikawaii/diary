@@ -852,7 +852,7 @@ function renderSortedList(type){
   if(!active.length){el.innerHTML='';return;}
   el.innerHTML=active.map(i=>{
     const urg=urgencyClass(i.due,i.time||'');
-    const dueLabel=i.due?`<span class="due-tag ${urg}">${fmtDue(i.due,i.time||'')}</span>`:'';
+    const dueLabel=i.due?`<span class="due-tag ${urg}">${fmtDue(i.due,i.time||'')}</span>`:`<span class="due-tag urgency-3">期限なし</span>`;
     const subLabel=(type==='assign'&&i.subject)?`<span style="font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:4px;padding:1px 7px;flex-shrink:0;">${esc(i.subject)}</span>`:'';
     const catLabel=(type==='ent'&&i.cat)?`<span style="font-size:11px;color:var(--muted);flex-shrink:0;">${esc(i.cat)}</span>`:'';
     const delFn=type==='task'?'delTask':type==='assign'?'delAssign':'delEnt';
