@@ -433,8 +433,6 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
             <input type="time" class="add-sel" id="taskTimeInp" style="max-width:110px" title="時間">
             <button class="btn-add" onclick="addTask()">追加</button>
           </div>
-          <div id="taskUndone"></div>
-          <div class="done-sec" id="taskDone"></div>
         </div>
 
         <!-- Assignment -->
@@ -455,8 +453,6 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
             <input type="time" class="add-sel" id="assignTime" style="max-width:110px" title="時間">
             <button class="btn-add" onclick="addAssign()">追加</button>
           </div>
-          <div id="assignUndone"></div>
-          <div class="done-sec" id="assignDone"></div>
         </div>
 
         <!-- Entertainment -->
@@ -986,8 +982,6 @@ function renderTasks(){
   const undone=tasks.filter(t=>!t.done),done=tasks.filter(t=>t.done),today=todayDs();
   const mi=t=>{let dh=t.due?`<div class="tdue ${!t.done&&t.due<today?'overdue':''}">${t.due}</div>`:`<input class="tdue-inp" type="date" value="" onchange="setDue('${t.id}',this.value)" title="期限">`;
     return `<div class="task-item ${t.done?'done':''}"><div class="tcheck ${t.done?'checked':''}" onclick="toggleTask('${t.id}')">${t.done?'✓':''}</div><input class="ttext" value="${esc(t.text)}" oninput="editTask('${t.id}',this.value)">${dh}<button class="iedit" onclick="openEditModal('task','${t.id}')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:0 3px;>✎</button><button class="idel" onclick="delTask('${t.id}')">×</button></div>`;};
-  document.getElementById('taskUndone').innerHTML=undone.length?`<div class="slabel">未完了 ${undone.length}</div>${undone.map(mi).join('')}`:'<div class="empty-sec">タスクはありません</div>';
-  document.getElementById('taskDone').innerHTML=done.length?`<div class="slabel">完了済み ${done.length}</div>${done.map(mi).join('')}`:'';
 }
 async function addTask(){const inp=document.getElementById('taskInp');const text=inp.value.trim();if(!text)return;const due=document.getElementById('taskDueInp').value;const time=document.getElementById('taskTimeInp').value;await fsAdd('tasks',{id:genId(),text,done:false,due,time,createdAt:Date.now()});inp.value='';document.getElementById('taskDueInp').value='';document.getElementById('taskTimeInp').value='';}
 async function toggleTask(id){const t=tasks.find(t=>t.id===id);if(t)await fsSet('tasks',{id,done:!t.done});}
@@ -1012,11 +1006,6 @@ function renderAssigns(){
       <button class="item-del" onclick="delAssign('${a.id}')">×</button>
     </div>`;
   };
-  document.getElementById('assignUndone').innerHTML=undone.length
-    ?`<div class="section-label">未完了 ${undone.length}</div>${undone.map(makeItem).join('')}`
-    :'<div style="text-align:center;color:var(--muted);font-size:13px;padding:20px 0">課題はありません🎉</div>';
-  document.getElementById('assignDone').innerHTML=done.length
-    ?`<div class="section-label" style="margin-top:16px">完了 ${done.length}</div>${done.map(makeItem).join('')}`:'';
 }
 async function addAssign(){
   const inp=document.getElementById('assignInp'),text=inp.value.trim();
