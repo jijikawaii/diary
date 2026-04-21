@@ -58,7 +58,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .due-tag.urgency-1{background:#fff3e0;color:#e06c00;font-weight:600;}
 .due-tag.urgency-2{background:#fffde0;color:#c8960c;}
 .due-tag.urgency-3{background:var(--bg);color:var(--muted);}
-.due-modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:300;}
+.due-modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:300;} .due-modal-ov[style*="display:none"]{pointer-events:none;}
 .due-modal{background:var(--surface);border-radius:14px;padding:24px;width:340px;max-width:95vw;box-shadow:0 8px 40px rgba(0,0,0,.18);}
 .due-modal h3{font-family:'Noto Serif JP',serif;font-size:16px;font-weight:600;margin-bottom:16px;color:var(--accent);}
 .due-modal-row{margin-bottom:12px;}
@@ -272,7 +272,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .mc-date{font-size:10px;color:var(--muted);}
 
 /* Modal */
-.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;}
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;} .modal-ov[style*="display:none"]{pointer-events:none;}
 .modal-box{background:var(--surface);border-radius:14px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;padding:22px;}
 .modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
 .modal-ttl{font-family:'Noto Serif JP',serif;font-size:16px;font-weight:600;}
@@ -511,7 +511,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 </div>
 
 <!-- Memo Modal -->
-<div class="modal-ov" id="memoModal" style="display:none" onclick="if(event.target===this)closeMemoModal()">
+<div class="modal-ov" id="memoModal" style="display:none;pointer-events:none;" onclick="if(event.target===this)closeMemoModal()">
   <div class="modal-box">
     <div class="modal-head">
       <div class="modal-ttl" id="mModalTitle">新しいメモ</div>
@@ -536,7 +536,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 
 
 <!-- Edit modal -->
-<div class="due-modal-ov" id="editModal" style="display:none" onclick="if(event.target===this)closeEditModal()">
+<div class="due-modal-ov" id="editModal" style="display:none;pointer-events:none;" onclick="if(event.target===this)closeEditModal()">
   <div class="due-modal">
     <h3 id="editModalTitle">編集</h3>
     <div class="due-modal-row">
@@ -574,7 +574,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 </div>
 
 <!-- Due modal -->
-<div class="due-modal-ov" id="dueModal" style="display:none" onclick="if(event.target===this)closeDueModal()">
+<div class="due-modal-ov" id="dueModal" style="display:none;pointer-events:none;" onclick="if(event.target===this)closeDueModal()">
   <div class="due-modal">
     <h3 id="dueModalTitle">新規追加</h3>
     <div class="due-modal-row">
@@ -939,10 +939,10 @@ function openDueModal(type,dateStr){
   document.getElementById('dmSubRow').style.display=type==='assign'?'':'none';
   document.getElementById('dmCatRow').style.display=type==='ent'?'':'none';
   document.getElementById('dmSub').value='';
-  document.getElementById('dueModal').style.display='flex';
+  document.getElementById('dueModal').style.cssText='display:flex;pointer-events:auto;';
   setTimeout(()=>document.getElementById('dmText').focus(),50);
 }
-function closeDueModal(){document.getElementById('dueModal').style.display='none';dueModalType=null;dueModalDate=null;}
+function closeDueModal(){document.getElementById('dueModal').style.cssText='display:none;pointer-events:none;';dueModalType=null;dueModalDate=null;}
 async function saveDueModal(){
   const text=document.getElementById('dmText').value.trim(); if(!text) return;
   const due=document.getElementById('dmDate').value;
@@ -977,10 +977,10 @@ function openEditModal(type, id){
   if(type==='ent'){
     document.getElementById('emCat').value=item.cat||'映画';
   }
-  document.getElementById('editModal').style.display='flex';
+  document.getElementById('editModal').style.cssText='display:flex;pointer-events:auto;';
   setTimeout(()=>document.getElementById('emText').focus(),50);
 }
-function closeEditModal(){document.getElementById('editModal').style.display='none';editModalType=null;editModalId=null;}
+function closeEditModal(){document.getElementById('editModal').style.cssText='display:none;pointer-events:none;';editModalType=null;editModalId=null;}
 async function saveEditModal(){
   const text=document.getElementById('emText').value.trim(); if(!text) return;
   const due=document.getElementById('emDate').value;
@@ -1103,9 +1103,9 @@ function openMemoModal(id){
     document.getElementById('mTagInp').value='';
     document.getElementById('mImgPrev').style.display='none';
   }
-  document.getElementById('memoModal').style.display='flex';
+  document.getElementById('memoModal').style.cssText='display:flex;pointer-events:auto;';
 }
-function closeMemoModal(){document.getElementById('memoModal').style.display='none';}
+function closeMemoModal(){document.getElementById('memoModal').style.cssText='display:none;pointer-events:none;';}
 function onMemoImg(e){
   const file=e.target.files[0];if(!file)return;
   const reader=new FileReader();
