@@ -29,6 +29,58 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
   .mobile-header,.mobile-cal,.bottom-nav{display:none!important;}
 }
 
+
+/* ── Due Calendar ── */
+.due-cal-wrap{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:16px;}
+.due-cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.due-cal-title{font-size:13px;font-weight:600;font-family:'Noto Serif JP',serif;}
+.due-cal-nav{background:none;border:none;cursor:pointer;color:var(--muted);padding:2px 6px;border-radius:5px;font-size:15px;transition:color var(--tr),background var(--tr);}
+.due-cal-nav:hover{color:var(--accent);background:var(--accent-light);}
+.due-cal-grid{display:grid !important;grid-template-columns:repeat(7,1fr) !important;gap:2px;}
+.due-cal-label{text-align:center;font-size:10px;color:var(--muted);padding:2px 0;}
+.due-cal-cell{display:flex;flex-direction:column;align-items:center;border-radius:6px;cursor:pointer;padding:4px 2px;transition:background var(--tr);border:1px solid transparent;}
+.due-cal-cell:hover:not(.empty){background:var(--accent-light);}
+.due-cal-cell.empty{cursor:default;pointer-events:none;visibility:hidden;}
+.due-cal-cell.today{border-color:var(--today);}
+.due-cal-cell.selected{background:var(--accent-light);border-color:var(--accent);}
+.due-cal-num{font-size:12px;color:var(--text);line-height:1.3;}
+.due-cal-cell.today .due-cal-num{color:var(--today);font-weight:700;}
+.due-cal-cell.selected .due-cal-num{color:var(--accent);font-weight:700;}
+.due-cal-badge{font-size:9px;font-weight:700;min-height:12px;line-height:1.2;color:transparent;}
+.due-cal-badge.has-item{color:var(--accent);}
+.due-cal-badge.has-urgent{color:var(--danger);}
+.urgency-0{color:var(--danger);font-weight:700;}
+.urgency-1{color:#e06c00;font-weight:600;}
+.urgency-2{color:#c8960c;font-weight:600;}
+.urgency-3{color:var(--muted);}
+.due-tag{font-size:11px;padding:1px 7px;border-radius:5px;white-space:nowrap;flex-shrink:0;}
+.due-tag.urgency-0{background:#ffeaea;color:var(--danger);font-weight:700;}
+.due-tag.urgency-1{background:#fff3e0;color:#e06c00;font-weight:600;}
+.due-tag.urgency-2{background:#fffde0;color:#c8960c;}
+.due-tag.urgency-3{background:var(--bg);color:var(--muted);}
+.due-modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:300;}
+.due-modal{background:var(--surface);border-radius:14px;padding:24px;width:340px;max-width:95vw;box-shadow:0 8px 40px rgba(0,0,0,.18);}
+.due-modal h3{font-family:'Noto Serif JP',serif;font-size:16px;font-weight:600;margin-bottom:16px;color:var(--accent);}
+.due-modal-row{margin-bottom:12px;}
+.due-modal-label{font-size:12px;color:var(--muted);margin-bottom:4px;}
+.due-modal input,.due-modal select{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;color:var(--text);background:var(--bg);outline:none;}
+.due-modal input:focus,.due-modal select:focus{border-color:var(--accent);}
+.due-modal-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;}
+.btn-cancel{padding:8px 16px;border:1px solid var(--border);border-radius:8px;background:none;font-family:inherit;font-size:13px;color:var(--muted);cursor:pointer;}
+.btn-cancel:hover{background:var(--bg);}
+
+
+/* ── Due 2-column layout ── */
+.due-layout{display:grid;grid-template-columns:220px 1fr;gap:16px;margin-bottom:16px;}
+.due-layout .due-cal-wrap{margin-bottom:0;}
+.due-right{display:flex;flex-direction:column;gap:0;}
+.due-right-title{font-size:11px;letter-spacing:.07em;color:var(--muted);text-transform:uppercase;margin-bottom:8px;padding-left:2px;}
+.due-right-scroll{flex:1;overflow-y:auto;max-height:260px;}
+@media(max-width:768px){
+  .due-layout{grid-template-columns:1fr;}
+  .due-right-scroll{max-height:none;}
+}
+
 /* ── Mobile layout ── */
 @media(max-width:768px){
   #appWrap{display:flex;flex-direction:column;min-height:100vh;}
@@ -367,8 +419,13 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
         <!-- Task -->
         <div class="tsec" id="secTask">
           <!-- Task due calendar -->
-          <div class="due-cal-wrap" id="taskDueCal"></div>
-          <div id="taskSorted"></div>
+          <div class="due-layout">
+            <div class="due-cal-wrap" id="taskDueCal"></div>
+            <div class="due-right">
+              <div class="due-right-title">期限が近い順</div>
+              <div class="due-right-scroll" id="taskSorted"></div>
+            </div>
+          </div>
           <div class="slabel" style="margin:14px 0 8px;font-size:11px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;">追加</div>
           <div class="add-row">
             <input class="add-input" id="taskInp" type="text" placeholder="タスクを追加…" onkeydown="if(event.key==='Enter')addTask()">
@@ -383,8 +440,13 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
         <!-- Assignment -->
         <div class="tsec" id="secAssign">
           <!-- Assign due calendar -->
-          <div class="due-cal-wrap" id="assignDueCal"></div>
-          <div id="assignSorted"></div>
+          <div class="due-layout">
+            <div class="due-cal-wrap" id="assignDueCal"></div>
+            <div class="due-right">
+              <div class="due-right-title">期限が近い順</div>
+              <div class="due-right-scroll" id="assignSorted"></div>
+            </div>
+          </div>
           <div class="slabel" style="margin:14px 0 8px;font-size:11px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;">追加</div>
           <div class="add-row">
             <input class="add-input" id="assignInp" type="text" placeholder="課題を追加…" onkeydown="if(event.key==='Enter')addAssign()">
@@ -400,8 +462,13 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
         <!-- Entertainment -->
         <div class="tsec" id="secEnt">
           <!-- Ent due calendar -->
-          <div class="due-cal-wrap" id="entDueCal"></div>
-          <div id="entSorted"></div>
+          <div class="due-layout">
+            <div class="due-cal-wrap" id="entDueCal"></div>
+            <div class="due-right">
+              <div class="due-right-title">期限が近い順</div>
+              <div class="due-right-scroll" id="entSorted"></div>
+            </div>
+          </div>
           <div class="slabel" style="margin:14px 0 8px;font-size:11px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;">追加</div>
           <div class="add-row">
             <input class="add-input" id="entInp" type="text" placeholder="タイトルを入力…" onkeydown="if(event.key==='Enter')addEnt()">
@@ -783,7 +850,7 @@ function renderSortedList(type){
     return da.localeCompare(db);
   });
   if(!active.length){el.innerHTML='';return;}
-  el.innerHTML=`<div class="slabel" style="margin-bottom:8px">期限が近い順</div>`+active.map(i=>{
+  el.innerHTML=active.map(i=>{
     const urg=urgencyClass(i.due,i.time||'');
     const dueLabel=i.due?`<span class="due-tag ${urg}">${fmtDue(i.due,i.time||'')}</span>`:'';
     const subLabel=(type==='assign'&&i.subject)?`<span style="font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:4px;padding:1px 7px;flex-shrink:0;">${esc(i.subject)}</span>`:'';
