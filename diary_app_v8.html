@@ -538,6 +538,45 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 </div>
 
 
+
+<!-- Edit modal -->
+<div class="due-modal-ov" id="editModal" style="display:none" onclick="if(event.target===this)closeEditModal()">
+  <div class="due-modal">
+    <h3 id="editModalTitle">編集</h3>
+    <div class="due-modal-row">
+      <div class="due-modal-label">内容</div>
+      <input id="emText" type="text" placeholder="内容を入力…">
+    </div>
+    <div class="due-modal-row" id="emSubRow" style="display:none">
+      <div class="due-modal-label">教科</div>
+      <input id="emSub" type="text" placeholder="例：数学">
+    </div>
+    <div class="due-modal-row" id="emCatRow" style="display:none">
+      <div class="due-modal-label">カテゴリ</div>
+      <select id="emCat">
+        <option value="映画">🎬 映画</option>
+        <option value="ゲーム">🎮 ゲーム</option>
+        <option value="本">📚 本</option>
+        <option value="アニメ">📺 アニメ</option>
+        <option value="音楽">🎵 音楽</option>
+        <option value="その他">🎯 その他</option>
+      </select>
+    </div>
+    <div class="due-modal-row">
+      <div class="due-modal-label">期限日</div>
+      <input id="emDate" type="date">
+    </div>
+    <div class="due-modal-row">
+      <div class="due-modal-label">時間（任意）</div>
+      <input id="emTime" type="time">
+    </div>
+    <div class="due-modal-btns">
+      <button class="btn-cancel" onclick="closeEditModal()">キャンセル</button>
+      <button class="btn-add" onclick="saveEditModal()">保存</button>
+    </div>
+  </div>
+</div>
+
 <!-- Due modal -->
 <div class="due-modal-ov" id="dueModal" style="display:none" onclick="if(event.target===this)closeDueModal()">
   <div class="due-modal">
@@ -862,6 +901,7 @@ function renderSortedList(type){
       ${subLabel}${catLabel}
       <span class="ttext" style="flex:1;font-size:13px;">${esc(i.title||i.text||'')}</span>
       ${dueLabel}
+      <button class="iedit" onclick="openEditModal('${type}','${i.id}')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:0 3px;opacity:0;transition:opacity var(--tr);">✎</button>
       <button class="idel" onclick="${delFn}('${i.id}')">×</button>
     </div>`;
   }).join('');
@@ -899,14 +939,53 @@ async function saveDueModal(){
   closeDueModal();
   showToast('追加しました');
 }
-document.addEventListener('keydown',e=>{if(e.key==='Escape') closeDueModal();});
+
+// ── Edit modal ──
+let editModalType=null, editModalId=null;
+function openEditModal(type, id){
+  editModalType=type; editModalId=id;
+  const items=type==='task'?tasks:type==='assign'?assigns:ents;
+  const item=items.find(i=>i.id===id); if(!item) return;
+  const titles={task:'タスクを編集',assign:'課題を編集',ent:'娯楽を編集'};
+  document.getElementById('editModalTitle').textContent=titles[type];
+  document.getElementById('emText').value=item.title||item.text||'';
+  document.getElementById('emDate').value=item.due||'';
+  document.getElementById('emTime').value=item.time||'';
+  document.getElementById('emSubRow').style.display=type==='assign'?'':'none';
+  document.getElementById('emCatRow').style.display=type==='ent'?'':'none';
+  if(type==='assign') document.getElementById('emSub').value=item.subject||'';
+  if(type==='ent'){
+    document.getElementById('emCat').value=item.cat||'映画';
+  }
+  document.getElementById('editModal').style.display='flex';
+  setTimeout(()=>document.getElementById('emText').focus(),50);
+}
+function closeEditModal(){document.getElementById('editModal').style.display='none';editModalType=null;editModalId=null;}
+async function saveEditModal(){
+  const text=document.getElementById('emText').value.trim(); if(!text) return;
+  const due=document.getElementById('emDate').value;
+  const time=document.getElementById('emTime').value;
+  const type=editModalType, id=editModalId;
+  if(type==='task') await fsSet('tasks',{id,text,due,time});
+  else if(type==='assign'){
+    const subject=document.getElementById('emSub').value.trim();
+    await fsSet('assigns',{id,text,subject,due,time});
+  } else {
+    const cat=document.getElementById('emCat').value;
+    await fsSet('ents',{id,title:text,cat,due,time});
+  }
+  closeEditModal();
+  showToast('保存しました');
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeEditModal();closeDueModal();}});
+
 
 // ── Tasks ──
 function renderTasks(){
   renderDueCal('task');
   const undone=tasks.filter(t=>!t.done),done=tasks.filter(t=>t.done),today=todayDs();
   const mi=t=>{let dh=t.due?`<div class="tdue ${!t.done&&t.due<today?'overdue':''}">${t.due}</div>`:`<input class="tdue-inp" type="date" value="" onchange="setDue('${t.id}',this.value)" title="期限">`;
-    return `<div class="task-item ${t.done?'done':''}"><div class="tcheck ${t.done?'checked':''}" onclick="toggleTask('${t.id}')">${t.done?'✓':''}</div><input class="ttext" value="${esc(t.text)}" oninput="editTask('${t.id}',this.value)">${dh}<button class="idel" onclick="delTask('${t.id}')">×</button></div>`;};
+    return `<div class="task-item ${t.done?'done':''}"><div class="tcheck ${t.done?'checked':''}" onclick="toggleTask('${t.id}')">${t.done?'✓':''}</div><input class="ttext" value="${esc(t.text)}" oninput="editTask('${t.id}',this.value)">${dh}<button class="iedit" onclick="openEditModal('task','${t.id}')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:0 3px;opacity:0;transition:opacity var(--tr);">✎</button><button class="idel" onclick="delTask('${t.id}')">×</button></div>`;};
   document.getElementById('taskUndone').innerHTML=undone.length?`<div class="slabel">未完了 ${undone.length}</div>${undone.map(mi).join('')}`:'<div class="empty-sec">タスクはありません</div>';
   document.getElementById('taskDone').innerHTML=done.length?`<div class="slabel">完了済み ${done.length}</div>${done.map(mi).join('')}`:'';
 }
@@ -929,6 +1008,7 @@ function renderAssigns(){
       ${a.subject?`<div class="task-due" style="background:var(--accent-light);color:var(--accent);border-radius:5px;padding:1px 8px;font-size:11px;">${esc(a.subject)}</div>`:''}
       <input class="task-text" value="${esc(a.text)}" oninput="editAssign('${a.id}',this.value)">
       ${a.due?`<div class="task-due ${overdue?'overdue':''}" title="締め切り">📅 ${a.due}</div>`:''}
+      <button class="item-edit" onclick="openEditModal('assign','${a.id}')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:0 3px;opacity:0;transition:opacity var(--tr);">✎</button>
       <button class="item-del" onclick="delAssign('${a.id}')">×</button>
     </div>`;
   };
