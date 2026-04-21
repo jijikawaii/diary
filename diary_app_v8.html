@@ -901,7 +901,7 @@ function renderSortedList(type){
       ${subLabel}${catLabel}
       <span class="ttext" style="flex:1;font-size:13px;">${esc(i.title||i.text||'')}</span>
       ${dueLabel}
-      <button class="iedit" onclick="openEditModal('${type}','${i.id}')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:0 3px;>✎</button>
+      <button class="iedit" onclick="openEditModal('${type}','${i.id}')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:0 3px;">✎</button>
       <button class="idel" onclick="${delFn}('${i.id}')">×</button>
     </div>`;
   }).join('');
