@@ -366,8 +366,14 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 
         <!-- Task -->
         <div class="tsec" id="secTask">
+          <!-- Task due calendar -->
+          <div class="due-cal-wrap" id="taskDueCal"></div>
+          <div id="taskSorted"></div>
+          <div class="slabel" style="margin:14px 0 8px;font-size:11px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;">追加</div>
           <div class="add-row">
             <input class="add-input" id="taskInp" type="text" placeholder="タスクを追加…" onkeydown="if(event.key==='Enter')addTask()">
+            <input type="date" class="add-sel" id="taskDueInp" title="期限日">
+            <input type="time" class="add-sel" id="taskTimeInp" style="max-width:110px" title="時間">
             <button class="btn-add" onclick="addTask()">追加</button>
           </div>
           <div id="taskUndone"></div>
@@ -376,10 +382,15 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 
         <!-- Assignment -->
         <div class="tsec" id="secAssign">
+          <!-- Assign due calendar -->
+          <div class="due-cal-wrap" id="assignDueCal"></div>
+          <div id="assignSorted"></div>
+          <div class="slabel" style="margin:14px 0 8px;font-size:11px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;">追加</div>
           <div class="add-row">
             <input class="add-input" id="assignInp" type="text" placeholder="課題を追加…" onkeydown="if(event.key==='Enter')addAssign()">
             <input class="add-input" style="max-width:130px" id="assignSubInp" type="text" placeholder="教科（例：数学）">
-            <input type="date" class="add-sel" id="assignDue" title="締め切り">
+            <input type="date" class="add-sel" id="assignDue" title="締め切り日">
+            <input type="time" class="add-sel" id="assignTime" style="max-width:110px" title="時間">
             <button class="btn-add" onclick="addAssign()">追加</button>
           </div>
           <div id="assignUndone"></div>
@@ -388,6 +399,10 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 
         <!-- Entertainment -->
         <div class="tsec" id="secEnt">
+          <!-- Ent due calendar -->
+          <div class="due-cal-wrap" id="entDueCal"></div>
+          <div id="entSorted"></div>
+          <div class="slabel" style="margin:14px 0 8px;font-size:11px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;">追加</div>
           <div class="add-row">
             <input class="add-input" id="entInp" type="text" placeholder="タイトルを入力…" onkeydown="if(event.key==='Enter')addEnt()">
             <select class="add-sel" id="entCatSel">
@@ -398,6 +413,8 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
               <option value="音楽">🎵 音楽</option>
               <option value="その他">🎯 その他</option>
             </select>
+            <input type="date" class="add-sel" id="entDueInp" title="期限日">
+            <input type="time" class="add-sel" id="entTimeInp" style="max-width:110px" title="時間">
             <button class="btn-add" onclick="addEnt()">追加</button>
           </div>
           <div class="filter-row" id="entFilter"></div>
@@ -449,6 +466,45 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
     <div class="modal-foot">
       <button class="btn-cancel" onclick="closeMemoModal()">キャンセル</button>
       <button class="btn-save" onclick="saveMemo()">保存</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- Due modal -->
+<div class="due-modal-ov" id="dueModal" style="display:none" onclick="if(event.target===this)closeDueModal()">
+  <div class="due-modal">
+    <h3 id="dueModalTitle">新規追加</h3>
+    <div class="due-modal-row">
+      <div class="due-modal-label">内容</div>
+      <input id="dmText" type="text" placeholder="内容を入力…">
+    </div>
+    <div class="due-modal-row" id="dmSubRow" style="display:none">
+      <div class="due-modal-label">教科</div>
+      <input id="dmSub" type="text" placeholder="例：数学">
+    </div>
+    <div class="due-modal-row" id="dmCatRow" style="display:none">
+      <div class="due-modal-label">カテゴリ</div>
+      <select id="dmCat">
+        <option value="映画">🎬 映画</option>
+        <option value="ゲーム">🎮 ゲーム</option>
+        <option value="本">📚 本</option>
+        <option value="アニメ">📺 アニメ</option>
+        <option value="音楽">🎵 音楽</option>
+        <option value="その他">🎯 その他</option>
+      </select>
+    </div>
+    <div class="due-modal-row">
+      <div class="due-modal-label">期限日</div>
+      <input id="dmDate" type="date">
+    </div>
+    <div class="due-modal-row">
+      <div class="due-modal-label">時間（任意）</div>
+      <input id="dmTime" type="time">
+    </div>
+    <div class="due-modal-btns">
+      <button class="btn-cancel" onclick="closeDueModal()">キャンセル</button>
+      <button class="btn-add" onclick="saveDueModal()">追加</button>
     </div>
   </div>
 </div>
@@ -512,6 +568,7 @@ const MOODS=['😊','😌','😢','😤','😴','🤩'];
 const ENT_CATS=['すべて','映画','ゲーム','本','アニメ','音楽','その他'];
 let calYear,calMonth,selDate=null,selMood='',curPage='diary',curTab='habit';
 let entFilter='すべて',memoTagF='すべて',editMemoId=null,pendingImg=null;
+let dueCalYear,dueCalMonth,dueModalType=null,dueModalDate=null;
 
 // ── Helpers ──
 function pad(n){return String(n).padStart(2,'0');}
@@ -649,15 +706,144 @@ async function toggleHabit(id){
 async function addHabit(){const inp=document.getElementById('habitInp');const name=inp.value.trim();if(!name)return;await fsAdd('habits',{id:genId(),name,createdAt:Date.now()});inp.value='';}
 async function delHabit(id){await fsDel('habits',id);const nh=JSON.parse(JSON.stringify(hlog));delete nh[id];await fsHL(nh);}
 
+
+// ── Due Calendar (shared) ──
+function urgencyClass(dueStr,timeStr){
+  if(!dueStr) return 'urgency-3';
+  const today=todayDs();
+  const now=new Date();
+  const dueDt=new Date(dueStr+'T'+(timeStr||'23:59'));
+  const diffMs=dueDt-now;
+  const diffDays=Math.ceil(diffMs/(1000*60*60*24));
+  if(diffDays<=0) return 'urgency-0';
+  if(diffDays<=2) return 'urgency-1';
+  if(diffDays<=5) return 'urgency-2';
+  return 'urgency-3';
+}
+function fmtDue(dueStr,timeStr){
+  if(!dueStr) return '';
+  const [y,m,d]=dueStr.split('-');
+  const dow=new Date(+y,+m-1,+d).getDay();
+  const base=`${Number(m)}/${Number(d)}（${'日月火水木金土'[dow]}）`;
+  return timeStr?base+' '+timeStr:base;
+}
+
+function renderDueCal(type){
+  const items = type==='task'?tasks : type==='assign'?assigns : ents;
+  const calId = type+'DueCal';
+  const el=document.getElementById(calId); if(!el) return;
+  if(!dueCalYear){ const n=new Date(); dueCalYear=n.getFullYear(); dueCalMonth=n.getMonth(); }
+  const today=todayDs();
+  // build count map
+  const cm={};
+  items.filter(i=>!i.done&&i.due).forEach(i=>{
+    const urg=urgencyClass(i.due,i.time||'');
+    if(!cm[i.due]||urg<cm[i.due].urg) cm[i.due]={cnt:(cm[i.due]?.cnt||0)+1,urg};
+    else cm[i.due].cnt++;
+  });
+  const sd=new Date(dueCalYear,dueCalMonth,1).getDay();
+  const tot=new Date(dueCalYear,dueCalMonth+1,0).getDate();
+  let h=`<div class="due-cal-header">
+    <button class="due-cal-nav" onclick="moveDueCal(-1,'${type}')">‹</button>
+    <div class="due-cal-title">${dueCalYear}年${dueCalMonth+1}月</div>
+    <button class="due-cal-nav" onclick="moveDueCal(1,'${type}')">›</button>
+  </div><div class="due-cal-grid">`;
+  h+='日月火水木金土'.split('').map(l=>`<div class="due-cal-label">${l}</div>`).join('');
+  for(let i=0;i<sd;i++) h+=`<div class="due-cal-cell empty"></div>`;
+  for(let d=1;d<=tot;d++){
+    const ds=`${dueCalYear}-${pad(dueCalMonth+1)}-${pad(d)}`;
+    const info=cm[ds];
+    const isSel=dueModalDate===ds&&dueModalType===type;
+    const cls=['due-cal-cell',ds===today?'today':'',isSel?'selected':''].filter(Boolean).join(' ');
+    const badgeCls=info?(info.urg==='urgency-0'||info.urg==='urgency-1'?'has-urgent':'has-item'):'';
+    h+=`<div class="${cls}" onclick="openDueModal('${type}','${ds}')">
+      <div class="due-cal-num">${d}</div>
+      <div class="due-cal-badge ${badgeCls}">${info?info.cnt:''}</div>
+    </div>`;
+  }
+  h+='</div>';
+  el.innerHTML=h;
+  renderSortedList(type);
+}
+function moveDueCal(dir,type){
+  dueCalMonth+=dir;
+  if(dueCalMonth<0){dueCalMonth=11;dueCalYear--;}
+  if(dueCalMonth>11){dueCalMonth=0;dueCalYear++;}
+  renderDueCal(type);
+}
+function renderSortedList(type){
+  const items=type==='task'?tasks:type==='assign'?assigns:ents;
+  const elId=type+'Sorted';
+  const el=document.getElementById(elId); if(!el) return;
+  const today=todayDs();
+  const active=items.filter(i=>!i.done).sort((a,b)=>{
+    if(!a.due&&!b.due) return 0;
+    if(!a.due) return 1; if(!b.due) return -1;
+    const da=a.due+(a.time||'99:99'), db=b.due+(b.time||'99:99');
+    return da.localeCompare(db);
+  });
+  if(!active.length){el.innerHTML='';return;}
+  el.innerHTML=`<div class="slabel" style="margin-bottom:8px">期限が近い順</div>`+active.map(i=>{
+    const urg=urgencyClass(i.due,i.time||'');
+    const dueLabel=i.due?`<span class="due-tag ${urg}">${fmtDue(i.due,i.time||'')}</span>`:'';
+    const subLabel=(type==='assign'&&i.subject)?`<span style="font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:4px;padding:1px 7px;flex-shrink:0;">${esc(i.subject)}</span>`:'';
+    const catLabel=(type==='ent'&&i.cat)?`<span style="font-size:11px;color:var(--muted);flex-shrink:0;">${esc(i.cat)}</span>`:'';
+    const delFn=type==='task'?'delTask':type==='assign'?'delAssign':'delEnt';
+    const togFn=type==='task'?'toggleTask':type==='assign'?'toggleAssign':'toggleEnt';
+    return `<div class="task-item">
+      <div class="tcheck" onclick="${togFn}('${i.id}')"></div>
+      ${subLabel}${catLabel}
+      <span class="ttext" style="flex:1;font-size:13px;">${esc(i.title||i.text||'')}</span>
+      ${dueLabel}
+      <button class="idel" onclick="${delFn}('${i.id}')">×</button>
+    </div>`;
+  }).join('');
+}
+
+// Due modal
+function openDueModal(type,dateStr){
+  dueModalType=type; dueModalDate=dateStr;
+  renderDueCal(type);
+  const titles={task:'タスクを追加',assign:'課題を追加',ent:'娯楽を追加'};
+  document.getElementById('dueModalTitle').textContent=titles[type]+(dateStr?` — ${fmtDue(dateStr,'')}` :'');
+  document.getElementById('dmText').value='';
+  document.getElementById('dmDate').value=dateStr||'';
+  document.getElementById('dmTime').value='';
+  document.getElementById('dmSubRow').style.display=type==='assign'?'':'none';
+  document.getElementById('dmCatRow').style.display=type==='ent'?'':'none';
+  document.getElementById('dmSub').value='';
+  document.getElementById('dueModal').style.display='flex';
+  setTimeout(()=>document.getElementById('dmText').focus(),50);
+}
+function closeDueModal(){document.getElementById('dueModal').style.display='none';dueModalType=null;dueModalDate=null;}
+async function saveDueModal(){
+  const text=document.getElementById('dmText').value.trim(); if(!text) return;
+  const due=document.getElementById('dmDate').value;
+  const time=document.getElementById('dmTime').value;
+  const type=dueModalType;
+  if(type==='task') await fsAdd('tasks',{id:genId(),text,done:false,due,time,createdAt:Date.now()});
+  else if(type==='assign'){
+    const sub=document.getElementById('dmSub').value.trim();
+    await fsAdd('assigns',{id:genId(),text,subject:sub,due,time,done:false,createdAt:Date.now()});
+  } else {
+    const cat=document.getElementById('dmCat').value;
+    await fsAdd('ents',{id:genId(),title:text,cat,due,time,done:false,createdAt:Date.now()});
+  }
+  closeDueModal();
+  showToast('追加しました');
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape') closeDueModal();});
+
 // ── Tasks ──
 function renderTasks(){
+  renderDueCal('task');
   const undone=tasks.filter(t=>!t.done),done=tasks.filter(t=>t.done),today=todayDs();
   const mi=t=>{let dh=t.due?`<div class="tdue ${!t.done&&t.due<today?'overdue':''}">${t.due}</div>`:`<input class="tdue-inp" type="date" value="" onchange="setDue('${t.id}',this.value)" title="期限">`;
     return `<div class="task-item ${t.done?'done':''}"><div class="tcheck ${t.done?'checked':''}" onclick="toggleTask('${t.id}')">${t.done?'✓':''}</div><input class="ttext" value="${esc(t.text)}" oninput="editTask('${t.id}',this.value)">${dh}<button class="idel" onclick="delTask('${t.id}')">×</button></div>`;};
   document.getElementById('taskUndone').innerHTML=undone.length?`<div class="slabel">未完了 ${undone.length}</div>${undone.map(mi).join('')}`:'<div class="empty-sec">タスクはありません</div>';
   document.getElementById('taskDone').innerHTML=done.length?`<div class="slabel">完了済み ${done.length}</div>${done.map(mi).join('')}`:'';
 }
-async function addTask(){const inp=document.getElementById('taskInp');const text=inp.value.trim();if(!text)return;await fsAdd('tasks',{id:genId(),text,done:false,due:'',createdAt:Date.now()});inp.value='';}
+async function addTask(){const inp=document.getElementById('taskInp');const text=inp.value.trim();if(!text)return;const due=document.getElementById('taskDueInp').value;const time=document.getElementById('taskTimeInp').value;await fsAdd('tasks',{id:genId(),text,done:false,due,time,createdAt:Date.now()});inp.value='';document.getElementById('taskDueInp').value='';document.getElementById('taskTimeInp').value='';}
 async function toggleTask(id){const t=tasks.find(t=>t.id===id);if(t)await fsSet('tasks',{id,done:!t.done});}
 async function editTask(id,val){await fsSet('tasks',{id,text:val});}
 async function setDue(id,val){await fsSet('tasks',{id,due:val});}
@@ -665,6 +851,7 @@ async function delTask(id){await fsDel('tasks',id);}
 
 // ── Assigns ──
 function renderAssigns(){
+  renderDueCal('assign');
   const today=todayDs();
   const undone=assigns.filter(a=>!a.done).sort((a,b)=>{ if(!a.due&&!b.due)return 0; if(!a.due)return 1; if(!b.due)return -1; return a.due.localeCompare(b.due); });
   const done=assigns.filter(a=>a.done);
@@ -689,8 +876,9 @@ async function addAssign(){
   if(!text)return;
   const sub=document.getElementById('assignSubInp').value.trim();
   const due=document.getElementById('assignDue').value;
-  await fsAdd('assigns',{id:genId(),text,subject:sub,due,done:false,createdAt:Date.now()});
-  inp.value=''; document.getElementById('assignSubInp').value=''; document.getElementById('assignDue').value='';
+  const time=document.getElementById('assignTime').value;
+  await fsAdd('assigns',{id:genId(),text,subject:sub,due,time,done:false,createdAt:Date.now()});
+  inp.value=''; document.getElementById('assignSubInp').value=''; document.getElementById('assignDue').value=''; document.getElementById('assignTime').value='';
 }
 async function toggleAssign(id){const a=assigns.find(a=>a.id===id);if(a)await fsSet('assigns',{id,done:!a.done});}
 async function editAssign(id,val){await fsSet('assigns',{id,text:val});}
@@ -698,6 +886,7 @@ async function delAssign(id){await fsDel('assigns',id);}
 
 // ── Entertainment ──
 function renderEnts(){
+  renderDueCal('ent');
   const el=document.getElementById('entList'),fc=document.getElementById('entFilter');
   if(!el||!fc)return;
   fc.innerHTML=ENT_CATS.map(c=>`<button class="fbtn ${entFilter===c?'active':''}" onclick="setEntFilter('${c}')">${c}</button>`).join('');
@@ -710,7 +899,9 @@ function setEntFilter(c){entFilter=c;renderEnts();}
 async function addEnt(){
   const inp=document.getElementById('entInp');const title=inp.value.trim();if(!title)return;
   const cat=document.getElementById('entCatSel').value;
-  await fsAdd('ents',{id:genId(),title,cat,done:false,createdAt:Date.now()});inp.value='';
+  const due=document.getElementById('entDueInp').value;
+  const time=document.getElementById('entTimeInp').value;
+  await fsAdd('ents',{id:genId(),title,cat,due,time,done:false,createdAt:Date.now()});inp.value='';document.getElementById('entDueInp').value='';document.getElementById('entTimeInp').value='';
 }
 async function toggleEnt(id){const e=ents.find(e=>e.id===id);if(e)await fsSet('ents',{id,done:!e.done});}
 async function delEnt(id){await fsDel('ents',id);}
