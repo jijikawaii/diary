@@ -726,7 +726,7 @@ async function postEntry(){
   document.getElementById('compText').value='';selMood='';renderMoodRow();onInput();
   await fsAdd('posts',p);
 }
-async function delPost(id){await fsDel('posts',id);}
+async function delPost(id){if(!confirm('この投稿を削除しますか？'))return;await fsDel('posts',id);}
 function onInput(){const v=document.getElementById('compText').value;document.getElementById('charCount').textContent=`${v.length} 文字`;document.getElementById('btnPost').disabled=!v.trim();}
 function renderMoodRow(){
   const r=document.getElementById('moodRow');r.innerHTML='';
@@ -771,7 +771,7 @@ async function toggleHabit(id){
   await fsHL(nh);
 }
 async function addHabit(){const inp=document.getElementById('habitInp');const name=inp.value.trim();if(!name)return;await fsAdd('habits',{id:genId(),name,createdAt:Date.now()});inp.value='';}
-async function delHabit(id){await fsDel('habits',id);const nh=JSON.parse(JSON.stringify(hlog));delete nh[id];await fsHL(nh);}
+async function delHabit(id){if(!confirm('この日課を削除しますか？'))return;await fsDel('habits',id);const nh=JSON.parse(JSON.stringify(hlog));delete nh[id];await fsHL(nh);}
 
 
 // ── Due Calendar (shared) ──
@@ -914,7 +914,7 @@ async function addTask(){const inp=document.getElementById('taskInp');const text
 async function toggleTask(id){const t=tasks.find(t=>t.id===id);if(t)await fsSet('tasks',{id,done:!t.done});}
 async function editTask(id,val){await fsSet('tasks',{id,text:val});}
 async function setDue(id,val){await fsSet('tasks',{id,due:val});}
-async function delTask(id){await fsDel('tasks',id);}
+async function delTask(id){if(!confirm('このタスクを削除しますか？'))return;await fsDel('tasks',id);}
 
 // ── Assigns ──
 function renderAssigns(){
@@ -949,7 +949,7 @@ async function addAssign(){
 }
 async function toggleAssign(id){const a=assigns.find(a=>a.id===id);if(a)await fsSet('assigns',{id,done:!a.done});}
 async function editAssign(id,val){await fsSet('assigns',{id,text:val});}
-async function delAssign(id){await fsDel('assigns',id);}
+async function delAssign(id){if(!confirm('この課題を削除しますか？'))return;await fsDel('assigns',id);}
 
 // ── Entertainment ──
 function renderEnts(){
@@ -971,7 +971,7 @@ async function addEnt(){
   await fsAdd('ents',{id:genId(),title,cat,due,time,done:false,createdAt:Date.now()});inp.value='';document.getElementById('entDueInp').value='';document.getElementById('entTimeInp').value='';
 }
 async function toggleEnt(id){const e=ents.find(e=>e.id===id);if(e)await fsSet('ents',{id,done:!e.done});}
-async function delEnt(id){await fsDel('ents',id);}
+async function delEnt(id){if(!confirm('この娯楽を削除しますか？'))return;await fsDel('ents',id);}
 
 // ── Memos ──
 function renderMemos(){
@@ -1028,7 +1028,7 @@ async function saveMemo(){
   await fsAdd('memos',{id,title,body,tags,imgBase64:pendingImg||'',date:todayDs(),createdAt:ex?ex.createdAt:Date.now(),updatedAt:Date.now()});
   closeMemoModal();showToast('保存しました');
 }
-async function delMemo(id){await fsDel('memos',id);showToast('削除しました');}
+async function delMemo(id){if(!confirm('このメモを削除しますか？'))return;await fsDel('memos',id);showToast('削除しました');}
 
 // ── Toast ──
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000);}
