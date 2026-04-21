@@ -215,9 +215,9 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .hcheck.checked{background:var(--green);border-color:var(--green);}
 .hname{flex:1;font-size:13px;}
 .hstreak{font-size:12px;color:var(--streak);font-weight:600;white-space:nowrap;}
-.idel{background:none;border:none;color:var(--muted);cursor:pointer;font-size:15px;padding:0 3px;transition:opacity var(--tr),color var(--tr);}
+.idel,.item-del,.item-edit,.iedit{background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:0 4px;flex-shrink:0;}
 .habit-item:hover .idel,.task-item:hover .idel,.ent-item:hover .idel{opacity:1;}
-.idel:hover{color:var(--danger);}
+.idel:hover,.item-del:hover{color:var(--danger);} .item-edit:hover,.iedit:hover{color:var(--accent);}
 .hcal-wrap{margin-top:16px;}
 .hcal-title{font-size:12px;color:var(--muted);margin-bottom:8px;}
 .hsel{margin-bottom:9px;padding:6px 10px;border:1px solid var(--border);border-radius:7px;font-family:inherit;font-size:13px;color:var(--text);background:var(--surface);outline:none;cursor:pointer;}
@@ -981,7 +981,7 @@ function renderTasks(){
   renderDueCal('task');
   const undone=tasks.filter(t=>!t.done),done=tasks.filter(t=>t.done),today=todayDs();
   const mi=t=>{let dh=t.due?`<div class="tdue ${!t.done&&t.due<today?'overdue':''}">${t.due}</div>`:`<input class="tdue-inp" type="date" value="" onchange="setDue('${t.id}',this.value)" title="期限">`;
-    return `<div class="task-item ${t.done?'done':''}"><div class="tcheck ${t.done?'checked':''}" onclick="toggleTask('${t.id}')">${t.done?'✓':''}</div><input class="ttext" value="${esc(t.text)}" oninput="editTask('${t.id}',this.value)">${dh}<button class="iedit" onclick="openEditModal('task','${t.id}')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:0 3px;>✎</button><button class="idel" onclick="delTask('${t.id}')">×</button></div>`;};
+    return `<div class="task-item ${t.done?'done':''}"><div class="tcheck ${t.done?'checked':''}" onclick="toggleTask('${t.id}')">${t.done?'✓':''}</div><input class="ttext" value="${esc(t.text)}" oninput="editTask('${t.id}',this.value)">${dh}<button class="iedit" onclick="openEditModal('task','${t.id}')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:0 3px;">✎</button><button class="idel" onclick="delTask('${t.id}')">×</button></div>`;};
 }
 async function addTask(){const inp=document.getElementById('taskInp');const text=inp.value.trim();if(!text)return;const due=document.getElementById('taskDueInp').value;const time=document.getElementById('taskTimeInp').value;await fsAdd('tasks',{id:genId(),text,done:false,due,time,createdAt:Date.now()});inp.value='';document.getElementById('taskDueInp').value='';document.getElementById('taskTimeInp').value='';}
 async function toggleTask(id){const t=tasks.find(t=>t.id===id);if(t)await fsSet('tasks',{id,done:!t.done});}
@@ -1002,7 +1002,7 @@ function renderAssigns(){
       ${a.subject?`<div class="task-due" style="background:var(--accent-light);color:var(--accent);border-radius:5px;padding:1px 8px;font-size:11px;">${esc(a.subject)}</div>`:''}
       <input class="task-text" value="${esc(a.text)}" oninput="editAssign('${a.id}',this.value)">
       ${a.due?`<div class="task-due ${overdue?'overdue':''}" title="締め切り">📅 ${a.due}</div>`:''}
-      <button class="item-edit" onclick="openEditModal('assign','${a.id}')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:0 3px;>✎</button>
+      <button class="item-edit" onclick="openEditModal('assign','${a.id}')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:0 3px;">✎</button>
       <button class="item-del" onclick="delAssign('${a.id}')">×</button>
     </div>`;
   };
