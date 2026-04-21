@@ -890,17 +890,41 @@ function renderSortedList(type){
     const dueLabel=i.due?`<span class="due-tag ${urg}">${fmtDue(i.due,i.time||'')}</span>`:`<span class="due-tag urgency-3">期限なし</span>`;
     const subLabel=(type==='assign'&&i.subject)?`<span style="font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:4px;padding:1px 7px;flex-shrink:0;">${esc(i.subject)}</span>`:'';
     const catLabel=(type==='ent'&&i.cat)?`<span style="font-size:11px;color:var(--muted);flex-shrink:0;">${esc(i.cat)}</span>`:'';
-    const delFn=type==='task'?'delTask':type==='assign'?'delAssign':'delEnt';
-    const togFn=type==='task'?'toggleTask':type==='assign'?'toggleAssign':'toggleEnt';
-    return `<div class="task-item">
-      <div class="tcheck" onclick="${togFn}('${i.id}')"></div>
+    const delFn=type==='task'?delTask:type==='assign'?delAssign:delEnt;
+    const togFn=type==='task'?toggleTask:type==='assign'?toggleAssign:toggleEnt;
+    const iid=i.id;
+    const itemHtml=`<div class="task-item" data-id="${iid}" data-type="${type}">
+      <div class="tcheck" style="width:18px;height:18px;border-radius:5px;border:1.5px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;" onclick="sortedToggle(this)"></div>
       ${subLabel}${catLabel}
       <span class="ttext" style="flex:1;font-size:13px;">${esc(i.title||i.text||'')}</span>
       ${dueLabel}
-      <button class="iedit" onclick="openEditModal('${type}','${i.id}')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:0 3px;">✎</button>
-      <button class="idel" onclick="${delFn}('${i.id}')">×</button>
+      <button style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:14px;padding:0 4px;" onclick="sortedEdit(this)">✎</button>
+      <button style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:16px;padding:0 4px;font-weight:bold;" onclick="sortedDel(this)">×</button>
     </div>`;
+    return itemHtml;
   }).join('');
+}
+
+
+function sortedDel(btn){
+  const el=btn.closest('[data-id]');
+  const id=el.dataset.id, type=el.dataset.type;
+  const msg=type==='task'?'このタスク':type==='assign'?'この課題':'この娯楽';
+  if(!confirm(msg+'を削除しますか？'))return;
+  if(type==='task') fsDel('tasks',id);
+  else if(type==='assign') fsDel('assigns',id);
+  else fsDel('ents',id);
+}
+function sortedEdit(btn){
+  const el=btn.closest('[data-id]');
+  openEditModal(el.dataset.type, el.dataset.id);
+}
+function sortedToggle(btn){
+  const el=btn.closest('[data-id]');
+  const id=el.dataset.id, type=el.dataset.type;
+  if(type==='task') toggleTask(id);
+  else if(type==='assign') toggleAssign(id);
+  else toggleEnt(id);
 }
 
 // Due modal
