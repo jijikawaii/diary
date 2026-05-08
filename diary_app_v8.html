@@ -24,7 +24,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 
 /* ── PC layout ── */
 @media(min-width:769px){
-  #appWrap{display:grid;grid-template-columns:272px 1fr;min-height:100vh;}
+  #appWrap{display:grid;grid-template-columns:260px 1fr;min-height:100vh;height:100vh;overflow:hidden;}
   .sidebar{background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow:hidden;}
   .mobile-header,.mobile-cal,.bottom-nav{display:none!important;pointer-events:none!important;visibility:hidden!important;}
 }
@@ -49,6 +49,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .due-cal-badge{font-size:9px;font-weight:700;min-height:12px;line-height:1.2;color:transparent;}
 .due-cal-badge.has-item{color:var(--accent);}
 .due-cal-badge.has-urgent{color:var(--danger);}
+.due-cal-done{font-size:9px;color:var(--green);font-weight:600;min-height:11px;line-height:1;}
 .urgency-0{color:var(--danger);font-weight:700;}
 .urgency-1{color:#e06c00;font-weight:600;}
 .urgency-2{color:#c8960c;font-weight:600;}
@@ -71,7 +72,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 
 
 /* ── Due 2-column layout ── */
-.due-layout{display:grid;grid-template-columns:220px 1fr;gap:16px;margin-bottom:16px;}
+.due-layout{display:grid;grid-template-columns:240px 1fr;gap:20px;margin-bottom:16px;}
 .due-layout .due-cal-wrap{margin-bottom:0;}
 .due-right{display:flex;flex-direction:column;gap:0;}
 .due-right-title{font-size:11px;letter-spacing:.07em;color:var(--muted);text-transform:uppercase;margin-bottom:8px;padding-left:2px;}
@@ -94,15 +95,15 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
   .bnav-btn.active{color:var(--accent);}
   .bnav-icon{font-size:20px;line-height:1;}
   .no-day{display:none!important;}
-  .diary-main{padding:12px 14px;}
+  .diary-main{padding:12px 14px;width:100%;}
   .diary-date-title{font-size:15px;margin-bottom:10px;}
   .post-card{padding:11px 12px;}
   .post-card-body{font-size:14px;}
   .composer{padding:11px 12px;margin-top:7px;}
   .composer textarea{font-size:14px;min-height:52px;}
-  .todo-page{padding:12px 14px;}
+  .todo-page{padding:12px 14px;width:100%;}
   .todo-page-title{font-size:16px;margin-bottom:12px;}
-  .memo-page{padding:12px 14px;}
+  .memo-page{padding:12px 14px;width:100%;}
   .memo-grid{grid-template-columns:1fr!important;}
   .modal-box{padding:18px;max-height:95vh;}
 }
@@ -160,7 +161,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .page.active{display:flex;}
 
 /* Diary */
-.diary-main{flex:1;display:flex;flex-direction:column;padding:26px 42px;max-width:660px;width:100%;margin:0 auto;}
+.diary-main{flex:1;display:flex;flex-direction:column;padding:26px 42px;width:100%;}
 .diary-date-title{font-family:'Noto Serif JP',serif;font-size:18px;font-weight:600;margin-bottom:14px;}
 .posts-area{flex:1;overflow-y:auto;padding-bottom:8px;}
 .post-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 15px;margin-bottom:8px;}
@@ -191,7 +192,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .btn-post:disabled{opacity:.35;cursor:default;}
 
 /* TODO */
-.todo-page{flex:1;overflow-y:auto;padding:26px 42px;max-width:660px;width:100%;margin:0 auto;}
+.todo-page{flex:1;overflow-y:auto;padding:26px 42px;width:100%;}
 .todo-page-title{font-family:'Noto Serif JP',serif;font-size:19px;font-weight:600;margin-bottom:16px;}
 .stabs{display:flex;gap:0;margin-bottom:14px;border-bottom:1px solid var(--border);overflow-x:auto;}
 .stab{padding:7px 14px;background:none;border:none;font-family:inherit;font-size:13px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all var(--tr);white-space:nowrap;}
@@ -252,7 +253,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .fbtn.active{background:var(--accent);color:#fff;border-color:var(--accent);}
 
 /* Memo */
-.memo-page{flex:1;overflow-y:auto;padding:26px 42px;max-width:720px;width:100%;margin:0 auto;}
+.memo-page{flex:1;overflow-y:auto;padding:26px 42px;width:100%;}
 .memo-header{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
 .memo-title{font-family:'Noto Serif JP',serif;font-size:19px;font-weight:600;flex:1;}
 .btn-new-memo{padding:7px 15px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:13px;cursor:pointer;transition:opacity var(--tr);}
@@ -843,6 +844,8 @@ function renderDueCal(type){
     if(!cm[i.due]||urg<cm[i.due].urg) cm[i.due]={cnt:(cm[i.due]?.cnt||0)+1,urg};
     else cm[i.due].cnt++;
   });
+  const dm={};
+  items.filter(i=>i.done&&i.due).forEach(i=>{dm[i.due]=(dm[i.due]||0)+1;});
   const sd=new Date(dueCalYear,dueCalMonth,1).getDay();
   const tot=new Date(dueCalYear,dueCalMonth+1,0).getDate();
   let h=`<div class="due-cal-header">
@@ -858,9 +861,11 @@ function renderDueCal(type){
     const isSel=dueModalDate===ds&&dueModalType===type;
     const cls=['due-cal-cell',ds===today?'today':'',isSel?'selected':''].filter(Boolean).join(' ');
     const badgeCls=info?(info.urg==='urgency-0'||info.urg==='urgency-1'?'has-urgent':'has-item'):'';
+    const doneCount=dm[ds]||0;
     h+=`<div class="${cls}" onclick="openDueModal('${type}','${ds}')">
       <div class="due-cal-num">${d}</div>
       <div class="due-cal-badge ${badgeCls}">${info?info.cnt:''}</div>
+      ${doneCount?`<div class="due-cal-done">✓${doneCount}</div>`:''}
     </div>`;
   }
   h+='</div>';
