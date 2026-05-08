@@ -397,14 +397,14 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
       <div class="todo-page">
         <div class="todo-page-title">TODO</div>
         <div class="stabs">
-          <button class="stab active" id="stabHabit" onclick="switchTab('habit')">🔁 日課</button>
-          <button class="stab"        id="stabTask"  onclick="switchTab('task')">✅ タスク</button>
-          <button class="stab"        id="stabAssign" onclick="switchTab('assign')">📝 課題</button>
+          <button class="stab active" id="stabTask"   onclick="switchTab('task')">✅ タスク</button>
+          <button class="stab"        id="stabHabit" onclick="switchTab('habit')">🔁 日課</button>
           <button class="stab"        id="stabEnt"   onclick="switchTab('ent')">🎮 娯楽</button>
+          <button class="stab"        id="stabAssign" onclick="switchTab('assign')">📝 課題</button>
         </div>
 
         <!-- Habit -->
-        <div class="tsec active" id="secHabit">
+        <div class="tsec" id="secHabit">
           <div class="add-row">
             <input class="add-input" id="habitInp" type="text" placeholder="日課を追加…" onkeydown="if(event.key==='Enter')addHabit()">
             <button class="btn-add" onclick="addHabit()">追加</button>
@@ -418,7 +418,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
         </div>
 
         <!-- Task -->
-        <div class="tsec" id="secTask">
+        <div class="tsec active" id="secTask">
           <!-- Task due calendar -->
           <div class="due-layout">
             <div class="due-cal-wrap" id="taskDueCal"></div>
@@ -670,7 +670,7 @@ let posts=[],habits=[],hlog={},tasks=[],assigns=[],ents=[],memos=[];
 const MOODS=['😊','😌','😢','😤','😴','🤩'];
 const ENT_CATS=['すべて','映画','ゲーム','本','アニメ','音楽','その他'];
 let calYear,calMonth,selDate=null,selMood='',curPage='diary',curTab='habit';
-let entFilter='すべて',memoTagF='すべて',editMemoId=null,pendingImg=null;
+let entFilter='すべて',memoTagF='すべて',editMemoId=null,pendingImg=null,curTab='task';
 let dueCalYear,dueCalMonth,dueModalType=null,dueModalDate=null;
 
 // ── Helpers ──
@@ -770,7 +770,7 @@ function renderMoodRow(){
 }
 
 // ── TODO ──
-function renderTodoPage(){if(curTab==='habit')renderHabits();else if(curTab==='task')renderTasks();else if(curTab==='assign')renderAssigns();else renderEnts();}
+function renderTodoPage(){if(curTab==='task')renderTasks();else if(curTab==='habit')renderHabits();else if(curTab==='ent')renderEnts();else renderAssigns();}
 
 // ── Habits ──
 function calcStreak(id){
