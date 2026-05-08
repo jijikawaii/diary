@@ -669,8 +669,8 @@ async function fsHL(v){await col('hlog').doc('data').set({value:v});}
 let posts=[],habits=[],hlog={},tasks=[],assigns=[],ents=[],memos=[];
 const MOODS=['😊','😌','😢','😤','😴','🤩'];
 const ENT_CATS=['すべて','映画','ゲーム','本','アニメ','音楽','その他'];
-let calYear,calMonth,selDate=null,selMood='',curPage='diary',curTab='habit';
-let entFilter='すべて',memoTagF='すべて',editMemoId=null,pendingImg=null,curTab='task';
+let calYear,calMonth,selDate=null,selMood='',curPage='diary',curTab='task';
+let entFilter='すべて',memoTagF='すべて',editMemoId=null,pendingImg=null;
 let dueCalYear,dueCalMonth,dueModalType=null,dueModalDate=null;
 
 // ── Helpers ──
