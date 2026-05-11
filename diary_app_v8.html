@@ -71,6 +71,61 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .btn-cancel:hover{background:var(--bg);}
 
 
+
+/* ── Schedule page ── */
+.schedule-page{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.schedule-header{display:flex;align-items:center;gap:12px;padding:18px 28px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.schedule-title{font-family:'Noto Serif JP',serif;font-size:20px;font-weight:600;flex:1;}
+.sch-nav{background:none;border:none;cursor:pointer;color:var(--muted);padding:4px 10px;border-radius:6px;font-size:18px;transition:all var(--tr);}
+.sch-nav:hover{color:var(--accent);background:var(--al);}
+.sch-today-btn{padding:5px 14px;border:1px solid var(--border);border-radius:7px;background:none;font-family:inherit;font-size:12px;color:var(--muted);cursor:pointer;transition:all var(--tr);}
+.sch-today-btn:hover{border-color:var(--accent);color:var(--accent);}
+
+.sch-grid-wrap{flex:1;overflow-y:auto;padding:0 20px 20px;}
+.sch-day-labels{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:4px;position:sticky;top:0;background:var(--bg);padding:8px 0 4px;z-index:10;}
+.sch-day-label{text-align:center;font-size:11px;color:var(--muted);padding:4px 0;}
+.sch-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
+.sch-cell{min-height:100px;border:1px solid var(--border);border-radius:8px;padding:6px;background:var(--surface);cursor:pointer;transition:background var(--tr);display:flex;flex-direction:column;gap:3px;}
+.sch-cell:hover{background:var(--al);}
+.sch-cell.empty{background:transparent;border-color:transparent;cursor:default;}
+.sch-cell.today{border-color:var(--accent);background:var(--al);}
+.sch-cell.other-month{opacity:.4;}
+.sch-date-num{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:2px;line-height:1;}
+.sch-cell.today .sch-date-num{color:var(--accent);}
+.sch-event{font-size:10px;background:var(--accent);color:var(--bg);border-radius:4px;padding:2px 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.4;}
+.sch-event.has-time{background:var(--green);}
+.sch-more{font-size:10px;color:var(--muted);padding:1px 4px;}
+
+/* Schedule modal */
+.sch-modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:400;pointer-events:auto;}
+.sch-modal-ov[style*="display:none"]{pointer-events:none;}
+.sch-modal{background:var(--surface);border-radius:14px;padding:24px;width:380px;max-width:95vw;box-shadow:0 8px 40px rgba(0,0,0,.4);}
+.sch-modal h3{font-family:'Noto Serif JP',serif;font-size:16px;font-weight:600;margin-bottom:16px;color:var(--text);}
+.sch-modal-row{margin-bottom:12px;}
+.sch-modal-label{font-size:12px;color:var(--muted);margin-bottom:4px;}
+.sch-modal input,.sch-modal textarea,.sch-modal select{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;color:var(--text);background:var(--bg);outline:none;transition:border-color var(--tr);}
+.sch-modal input:focus,.sch-modal textarea:focus{border-color:var(--accent);}
+.sch-modal textarea{resize:vertical;min-height:60px;}
+.sch-modal-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;}
+.sch-event-list{margin-top:12px;display:flex;flex-direction:column;gap:6px;}
+.sch-event-item{display:flex;align-items:flex-start;gap:8px;padding:10px 12px;background:var(--al);border-radius:8px;border-left:3px solid var(--accent);}
+.sch-event-item.has-time{border-left-color:var(--green);}
+.sch-event-time{font-size:11px;color:var(--muted);flex-shrink:0;min-width:36px;margin-top:1px;}
+.sch-event-info{flex:1;}
+.sch-event-title{font-size:13px;color:var(--text);margin-bottom:2px;}
+.sch-event-note{font-size:11px;color:var(--muted);}
+.sch-event-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:0 2px;flex-shrink:0;transition:color var(--tr);}
+.sch-event-del:hover{color:var(--danger);}
+.sch-event-edit{background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:0 2px;flex-shrink:0;transition:color var(--tr);}
+.sch-event-edit:hover{color:var(--accent);}
+
+@media(max-width:768px){
+  .sch-cell{min-height:60px;padding:4px;}
+  .sch-event{font-size:9px;padding:1px 3px;}
+  .schedule-header{padding:12px 16px 10px;}
+  .sch-grid-wrap{padding:0 8px 80px;}
+}
+
 /* ── Due 2-column layout ── */
 .due-layout{display:grid;grid-template-columns:240px 1fr;gap:20px;margin-bottom:16px;}
 .due-layout .due-cal-wrap{margin-bottom:0;}
@@ -372,6 +427,31 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
   <!-- Main -->
   <main class="main">
 
+    <!-- Schedule -->
+    <div class="page" id="pageSched">
+      <div class="schedule-page">
+        <div class="schedule-header">
+          <button class="sch-nav" onclick="moveSchCal(-1)">‹</button>
+          <div class="schedule-title" id="schTitle"></div>
+          <button class="sch-nav" onclick="moveSchCal(1)">›</button>
+          <button class="sch-today-btn" onclick="goSchToday()">今日</button>
+          <button class="btn-add" onclick="openSchModal(null,null)" style="padding:6px 14px;font-size:12px;">＋ 追加</button>
+        </div>
+        <div class="sch-grid-wrap">
+          <div class="sch-day-labels">
+            <div class="sch-day-label" style="color:#e05555;">日</div>
+            <div class="sch-day-label">月</div>
+            <div class="sch-day-label">火</div>
+            <div class="sch-day-label">水</div>
+            <div class="sch-day-label">木</div>
+            <div class="sch-day-label">金</div>
+            <div class="sch-day-label" style="color:#5fa882;">土</div>
+          </div>
+          <div class="sch-grid" id="schGrid"></div>
+        </div>
+      </div>
+    </div>
+
     <!-- Diary -->
     <div class="page active" id="pageDiary">
       <div class="no-day" id="noDaySel"><div class="ei">📅</div><p>日付を選んでください</p></div>
@@ -504,11 +584,47 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 
   <!-- Bottom nav (mobile) -->
   <nav class="bottom-nav">
+    <button class="bnav-btn" id="bnavSched" onclick="switchPage('sched')"><span class="bnav-icon">📅</span>予定</button>
     <button class="bnav-btn active" id="bnavDiary" onclick="switchPage('diary')"><span class="bnav-icon">📝</span>日記</button>
     <button class="bnav-btn"        id="bnavTodo"  onclick="switchPage('todo')"><span class="bnav-icon">☑</span>TODO</button>
     <button class="bnav-btn"        id="bnavMemo"  onclick="switchPage('memo')"><span class="bnav-icon">📌</span>メモ</button>
   </nav>
 
+</div>
+
+
+<!-- Schedule modal -->
+<div class="sch-modal-ov" id="schModal" style="display:none;pointer-events:none;" onclick="if(event.target===this)closeSchModal()">
+  <div class="sch-modal">
+    <h3 id="schModalTitle">予定を追加</h3>
+    <div class="sch-modal-row">
+      <div class="sch-modal-label">タイトル</div>
+      <input id="smTitle" type="text" placeholder="予定のタイトル…">
+    </div>
+    <div class="sch-modal-row">
+      <div class="sch-modal-label">日付</div>
+      <input id="smDate" type="date">
+    </div>
+    <div style="display:flex;gap:8px;" class="sch-modal-row">
+      <div style="flex:1;">
+        <div class="sch-modal-label">開始時間</div>
+        <input id="smStart" type="time">
+      </div>
+      <div style="flex:1;">
+        <div class="sch-modal-label">終了時間</div>
+        <input id="smEnd" type="time">
+      </div>
+    </div>
+    <div class="sch-modal-row">
+      <div class="sch-modal-label">メモ</div>
+      <textarea id="smNote" placeholder="メモ（任意）"></textarea>
+    </div>
+    <div id="schEventList" class="sch-event-list"></div>
+    <div class="sch-modal-btns">
+      <button class="btn-cancel" onclick="closeSchModal()">閉じる</button>
+      <button class="btn-add" onclick="saveSchEvent()">追加</button>
+    </div>
+  </div>
 </div>
 
 <!-- Memo Modal -->
@@ -658,6 +774,7 @@ function startListeners(){
   L('ents',   v=>{ents=v;},   ()=>{if(curPage==='todo'&&curTab==='ent')renderEnts();});
   L('memos',  v=>{memos=v;},  ()=>{if(curPage==='memo')renderMemos();});
   LD('hlog',  v=>{hlog=v;},   ()=>{if(curPage==='todo'&&curTab==='habit')renderHabits();});
+  startSchListener();
 }
 function stopListeners(){unsubs.forEach(u=>u());unsubs=[];}
 async function fsAdd(n,d){await col(n).doc(d.id).set(d);}
@@ -685,7 +802,7 @@ function cap(s){return s[0].toUpperCase()+s.slice(1);}
 // ── Page / Tab switch ──
 function switchPage(page){
   curPage=page;
-  ['diary','todo','memo'].forEach(p=>{
+  ['sched','diary','todo','memo'].forEach(p=>{
     const pe=document.getElementById('page'+cap(p));if(pe)pe.classList.toggle('active',p===page);
     const ne=document.getElementById('nav'+cap(p));if(ne)ne.classList.toggle('active',p===page);
     const be=document.getElementById('bnav'+cap(p));if(be)be.classList.toggle('active',p===page);
@@ -693,6 +810,7 @@ function switchPage(page){
   const isDiary=page==='diary';
   document.getElementById('calWrap').style.display=isDiary?'':'none';
   document.getElementById('datePanel').style.display=isDiary?'':'none';
+  if(page==='sched') renderSchCal();
   const mc=document.getElementById('mCal');if(mc)mc.style.display=isDiary?'':'none';
   if(page==='todo')renderTodoPage();
   if(page==='memo')renderMemos();
@@ -809,6 +927,143 @@ async function toggleHabit(id){
 async function addHabit(){const inp=document.getElementById('habitInp');const name=inp.value.trim();if(!name)return;await fsAdd('habits',{id:genId(),name,createdAt:Date.now()});inp.value='';}
 async function delHabit(id){if(!confirm('この日課を削除しますか？'))return;await fsDel('habits',id);const nh=JSON.parse(JSON.stringify(hlog));delete nh[id];await fsHL(nh);}
 
+
+
+// ── Schedule ──
+let schYear, schMonth, schEvents=[], schEditId=null;
+let schUnsub=null;
+
+function initSch(){
+  const n=new Date(); schYear=n.getFullYear(); schMonth=n.getMonth();
+}
+
+function startSchListener(){
+  if(schUnsub) schUnsub();
+  schUnsub=col('events').onSnapshot(snap=>{
+    schEvents=snap.docs.map(d=>({id:d.id,...d.data()}));
+    if(curPage==='sched') renderSchCal();
+  });
+}
+
+function renderSchCal(){
+  const months=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  document.getElementById('schTitle').textContent=`${schYear}年 ${months[schMonth]}`;
+  const today=todayDs();
+  const firstDay=new Date(schYear,schMonth,1).getDay();
+  const lastDate=new Date(schYear,schMonth+1,0).getDate();
+  // 前月の日数
+  const prevLast=new Date(schYear,schMonth,0).getDate();
+
+  let cells=[];
+  // 前月の余白
+  for(let i=firstDay-1;i>=0;i--){
+    const d=prevLast-i;
+    const ds=`${schMonth===0?schYear-1:schYear}-${pad(schMonth===0?12:schMonth)}-${pad(d)}`;
+    cells.push({ds,d,otherMonth:true});
+  }
+  // 当月
+  for(let d=1;d<=lastDate;d++){
+    const ds=`${schYear}-${pad(schMonth+1)}-${pad(d)}`;
+    cells.push({ds,d,otherMonth:false});
+  }
+  // 次月の余白（6週分埋める）
+  let next=1;
+  while(cells.length%7!==0){
+    const ds=`${schMonth===11?schYear+1:schYear}-${pad(schMonth===11?1:schMonth+2)}-${pad(next)}`;
+    cells.push({ds,d:next++,otherMonth:true});
+  }
+
+  const grid=document.getElementById('schGrid');
+  grid.innerHTML=cells.map(cell=>{
+    const evs=schEvents.filter(e=>e.date===cell.ds).sort((a,b)=>(a.startTime||'').localeCompare(b.startTime||''));
+    const isToday=cell.ds===today;
+    const cls=['sch-cell',isToday?'today':'',cell.otherMonth?'other-month':''].filter(Boolean).join(' ');
+    const visible=evs.slice(0,3);
+    const more=evs.length-3;
+    const evHtml=visible.map(e=>`<div class="sch-event ${e.startTime?'has-time':''}" title="${esc(e.title)}">${e.startTime?e.startTime+' ':''}${esc(e.title)}</div>`).join('');
+    const moreHtml=more>0?`<div class="sch-more">+${more}件</div>`:'';
+    return `<div class="${cls}" onclick="openSchModal('${cell.ds}',null)">
+      <div class="sch-date-num">${cell.d}</div>
+      ${evHtml}${moreHtml}
+    </div>`;
+  }).join('');
+}
+
+function moveSchCal(dir){
+  schMonth+=dir;
+  if(schMonth<0){schMonth=11;schYear--;}
+  if(schMonth>11){schMonth=0;schYear++;}
+  renderSchCal();
+}
+function goSchToday(){
+  const n=new Date(); schYear=n.getFullYear(); schMonth=n.getMonth();
+  renderSchCal();
+}
+
+function openSchModal(dateStr, editId){
+  schEditId=editId;
+  const ev=editId?schEvents.find(e=>e.id===editId):null;
+  document.getElementById('schModalTitle').textContent=dateStr?`${fmtDate(dateStr)}の予定`:'予定を追加';
+  document.getElementById('smTitle').value=ev?ev.title:'';
+  document.getElementById('smDate').value=ev?ev.date:(dateStr||todayDs());
+  document.getElementById('smStart').value=ev?ev.startTime||'':'';
+  document.getElementById('smEnd').value=ev?ev.endTime||'':'';
+  document.getElementById('smNote').value=ev?ev.note||'':'';
+  // その日のイベント一覧
+  const ds=dateStr||ev?.date||todayDs();
+  renderSchEventList(ds);
+  document.getElementById('schModal').style.cssText='display:flex;pointer-events:auto;';
+  setTimeout(()=>document.getElementById('smTitle').focus(),50);
+}
+function closeSchModal(){
+  document.getElementById('schModal').style.cssText='display:none;pointer-events:none;';
+  schEditId=null;
+}
+function renderSchEventList(ds){
+  const evs=schEvents.filter(e=>e.date===ds).sort((a,b)=>(a.startTime||'').localeCompare(b.startTime||''));
+  const el=document.getElementById('schEventList');
+  if(!evs.length){el.innerHTML='';return;}
+  el.innerHTML=`<div style="font-size:11px;color:var(--muted);margin-bottom:6px;letter-spacing:.05em;">この日の予定</div>`+
+    evs.map(e=>`<div class="sch-event-item ${e.startTime?'has-time':''}">
+      <div class="sch-event-time">${e.startTime||''}</div>
+      <div class="sch-event-info">
+        <div class="sch-event-title">${esc(e.title)}</div>
+        ${e.note?`<div class="sch-event-note">${esc(e.note)}</div>`:''}
+      </div>
+      <button class="sch-event-edit" onclick="editSchEvent('${e.id}')">✎</button>
+      <button class="sch-event-del" onclick="delSchEvent('${e.id}')">×</button>
+    </div>`).join('');
+}
+async function saveSchEvent(){
+  const title=document.getElementById('smTitle').value.trim(); if(!title) return;
+  const date=document.getElementById('smDate').value; if(!date) return;
+  const startTime=document.getElementById('smStart').value;
+  const endTime=document.getElementById('smEnd').value;
+  const note=document.getElementById('smNote').value.trim();
+  const id=schEditId||genId();
+  await col('events').doc(id).set({id,title,date,startTime,endTime,note,createdAt:Date.now()});
+  schEditId=null;
+  document.getElementById('smTitle').value='';
+  document.getElementById('smStart').value='';
+  document.getElementById('smEnd').value='';
+  document.getElementById('smNote').value='';
+  renderSchEventList(date);
+  showToast('予定を保存しました');
+}
+function editSchEvent(id){
+  const ev=schEvents.find(e=>e.id===id); if(!ev) return;
+  schEditId=id;
+  document.getElementById('smTitle').value=ev.title;
+  document.getElementById('smDate').value=ev.date;
+  document.getElementById('smStart').value=ev.startTime||'';
+  document.getElementById('smEnd').value=ev.endTime||'';
+  document.getElementById('smNote').value=ev.note||'';
+}
+async function delSchEvent(id){
+  if(!confirm('この予定を削除しますか？'))return;
+  await col('events').doc(id).delete();
+  showToast('削除しました');
+}
 
 // ── Due Calendar (shared) ──
 function urgencyClass(dueStr,timeStr){
