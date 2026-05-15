@@ -753,7 +753,7 @@ auth.onAuthStateChanged(user=>{
     document.getElementById('uAvatar').src=user.photoURL||'';
     document.getElementById('uName').textContent=user.displayName||user.email;
     const ma=document.getElementById('mAvatar');if(ma)ma.src=user.photoURL||'';
-    startListeners(); initCal(); renderMoodRow(); selectDate(todayDs());
+    startListeners(); initCal(); initSch(); renderMoodRow(); selectDate(todayDs());
   } else {
     uid=null; stopListeners();
     document.getElementById('loginScreen').style.display='flex';
@@ -811,7 +811,7 @@ function switchPage(page){
   const isDiary=page==='diary';
   document.getElementById('calWrap').style.display=isDiary?'':'none';
   document.getElementById('datePanel').style.display=isDiary?'':'none';
-  if(page==='sched') renderSchCal();
+  if(page==='sched'){ if(!schYear) initSch(); renderSchCal(); }
   const mc=document.getElementById('mCal');if(mc)mc.style.display=isDiary?'':'none';
   if(page==='todo')renderTodoPage();
   if(page==='memo')renderMemos();
