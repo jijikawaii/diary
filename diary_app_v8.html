@@ -72,6 +72,21 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 
 
 
+
+/* ── Repeat assign ── */
+.repeat-section{margin-top:20px;border-top:1px solid var(--border);padding-top:16px;}
+.repeat-title{font-size:11px;letter-spacing:.07em;color:var(--muted);text-transform:uppercase;margin-bottom:10px;}
+.repeat-item{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;margin-bottom:6px;}
+.repeat-item-info{flex:1;}
+.repeat-item-name{font-size:13px;color:var(--text);}
+.repeat-item-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+.repeat-days{display:flex;gap:4px;margin-top:4px;}
+.repeat-day{font-size:10px;padding:2px 6px;border-radius:4px;background:var(--al);color:var(--accent);}
+.repeat-add-row{display:flex;flex-direction:column;gap:8px;padding:14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-top:10px;}
+.repeat-day-picks{display:flex;gap:6px;flex-wrap:wrap;}
+.day-pick-btn{padding:5px 10px;border:1px solid var(--border);border-radius:6px;background:none;font-family:inherit;font-size:12px;color:var(--muted);cursor:pointer;transition:all var(--tr);}
+.day-pick-btn.active{background:var(--accent);color:var(--bg);border-color:var(--accent);}
+
 /* ── Schedule page ── */
 .schedule-page{flex:1;display:flex;flex-direction:column;overflow:hidden;}
 .schedule-header{display:flex;align-items:center;gap:12px;padding:18px 28px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
@@ -535,6 +550,32 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
             <input type="time" class="add-sel" id="assignTime" style="max-width:110px" title="時間">
             <button class="btn-add" onclick="addAssign()">追加</button>
           </div>
+
+          <!-- 毎週繰り返し -->
+          <div class="repeat-section">
+            <div class="repeat-title">🔁 毎週繰り返し課題</div>
+            <div id="repeatAssignList"></div>
+            <div class="repeat-add-row" id="repeatAddForm">
+              <div style="display:flex;gap:8px;">
+                <input class="add-input" id="repeatInp" type="text" placeholder="課題名…">
+                <input class="add-input" style="max-width:120px" id="repeatSubInp" type="text" placeholder="教科">
+              </div>
+              <div style="font-size:11px;color:var(--muted);margin-bottom:2px;">曜日を選択</div>
+              <div class="repeat-day-picks" id="repeatDayPicks">
+                <button class="day-pick-btn" data-day="0" onclick="toggleRepeatDay(this)">日</button>
+                <button class="day-pick-btn" data-day="1" onclick="toggleRepeatDay(this)">月</button>
+                <button class="day-pick-btn" data-day="2" onclick="toggleRepeatDay(this)">火</button>
+                <button class="day-pick-btn" data-day="3" onclick="toggleRepeatDay(this)">水</button>
+                <button class="day-pick-btn" data-day="4" onclick="toggleRepeatDay(this)">木</button>
+                <button class="day-pick-btn" data-day="5" onclick="toggleRepeatDay(this)">金</button>
+                <button class="day-pick-btn" data-day="6" onclick="toggleRepeatDay(this)">土</button>
+              </div>
+              <div style="display:flex;gap:8px;align-items:center;">
+                <input type="time" class="add-sel" id="repeatTime" style="max-width:120px" title="提出時間">
+                <button class="btn-add" onclick="addRepeatAssign()" style="margin-left:auto;">登録</button>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Entertainment -->
@@ -772,6 +813,7 @@ function startListeners(){
   L('habits', v=>{habits=v;}, ()=>{if(curPage==='todo'&&curTab==='habit')renderHabits();});
   L('tasks',  v=>{tasks=v;},  ()=>{if(curPage==='todo'&&curTab==='task')renderTasks();});
   L('assigns',v=>{assigns=v;},()=>{if(curPage==='todo'&&curTab==='assign')renderAssigns();});
+  L('repeatAssigns',v=>{repeatAssigns=v;},()=>{if(curPage==='todo'&&curTab==='assign'){renderRepeatAssigns();applyRepeatAssigns();}});
   L('ents',   v=>{ents=v;},   ()=>{if(curPage==='todo'&&curTab==='ent')renderEnts();});
   L('memos',  v=>{memos=v;},  ()=>{if(curPage==='memo')renderMemos();});
   LD('hlog',  v=>{hlog=v;},   ()=>{if(curPage==='todo'&&curTab==='habit')renderHabits();});
@@ -784,7 +826,7 @@ async function fsSet(n,d){await col(n).doc(d.id).set(d,{merge:true});}
 async function fsHL(v){await col('hlog').doc('data').set({value:v});}
 
 // ── State ──
-let posts=[],habits=[],hlog={},tasks=[],assigns=[],ents=[],memos=[];
+let posts=[],habits=[],hlog={},tasks=[],assigns=[],ents=[],memos=[],repeatAssigns=[];
 const MOODS=['😊','😌','😢','😤','😴','🤩'];
 const ENT_CATS=['すべて','映画','ゲーム','本','アニメ','音楽','その他'];
 let calYear,calMonth,selDate=null,selMood='',curPage='diary',curTab='task';
@@ -1299,7 +1341,72 @@ async function setDue(id,val){await fsSet('tasks',{id,due:val});}
 async function delTask(id){if(!confirm('このタスクを削除しますか？'))return;await fsDel('tasks',id);}
 
 // ── Assigns ──
+
+// ── Repeat Assigns ──
+const DAY_NAMES = ['日','月','火','水','木','金','土'];
+
+function toggleRepeatDay(btn){
+  btn.classList.toggle('active');
+}
+
+async function addRepeatAssign(){
+  const text=document.getElementById('repeatInp').value.trim(); if(!text) return;
+  const sub=document.getElementById('repeatSubInp').value.trim();
+  const time=document.getElementById('repeatTime').value;
+  const days=[...document.querySelectorAll('.day-pick-btn.active')].map(b=>Number(b.dataset.day));
+  if(!days.length){showToast('曜日を選んでください');return;}
+  await col('repeatAssigns').doc(genId()).set({id:genId(),text,subject:sub,days,time,createdAt:Date.now()});
+  document.getElementById('repeatInp').value='';
+  document.getElementById('repeatSubInp').value='';
+  document.getElementById('repeatTime').value='';
+  document.querySelectorAll('.day-pick-btn').forEach(b=>b.classList.remove('active'));
+  showToast('毎週の課題を登録しました');
+}
+
+async function delRepeatAssign(id){
+  if(!confirm('この繰り返し課題を削除しますか？'))return;
+  await col('repeatAssigns').doc(id).delete();
+}
+
+function renderRepeatAssigns(){
+  const el=document.getElementById('repeatAssignList'); if(!el) return;
+  if(!repeatAssigns.length){el.innerHTML='';return;}
+  el.innerHTML=repeatAssigns.map(r=>`
+    <div class="repeat-item">
+      <div class="repeat-item-info">
+        <div class="repeat-item-name">${esc(r.text)}${r.subject?` <span style="font-size:11px;color:var(--muted);">/ ${esc(r.subject)}</span>`:''}</div>
+        <div class="repeat-days">${(r.days||[]).sort().map(d=>`<span class="repeat-day">${DAY_NAMES[d]}曜</span>`).join('')}${r.time?`<span class="repeat-day" style="background:none;color:var(--muted);">${r.time}</span>`:''}</div>
+      </div>
+      <button style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:0 4px;" onclick="delRepeatAssign('${r.id}')">×</button>
+    </div>
+  `).join('');
+}
+
+function applyRepeatAssigns(){
+  // 今日から7日分の曜日に対応する繰り返し課題を、まだ追加されていなければ自動追加
+  if(!uid||!repeatAssigns.length) return;
+  const today=new Date(); today.setHours(0,0,0,0);
+  for(let i=0;i<7;i++){
+    const d=new Date(today); d.setDate(today.getDate()+i);
+    const dow=d.getDay();
+    const ds=`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+    repeatAssigns.forEach(async r=>{
+      if(!(r.days||[]).includes(dow)) return;
+      // すでに同名の課題がその日にあればスキップ
+      const exists=assigns.some(a=>a.date===ds&&a.text===r.text&&a.subject===r.subject&&a.fromRepeat);
+      if(exists) return;
+      const id=genId();
+      await col('assigns').doc(id).set({
+        id, text:r.text, subject:r.subject||'', due:ds,
+        time:r.time||'', done:false, fromRepeat:true,
+        repeatId:r.id, createdAt:Date.now()
+      });
+    });
+  }
+}
+
 function renderAssigns(){
+  renderRepeatAssigns();
   renderDueCal('assign');
   const today=todayDs();
   const undone=assigns.filter(a=>!a.done).sort((a,b)=>{ if(!a.due&&!b.due)return 0; if(!a.due)return 1; if(!b.due)return -1; return a.due.localeCompare(b.due); });
