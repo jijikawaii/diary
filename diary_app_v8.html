@@ -165,7 +165,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 
 @media(max-width:768px){
   .sch-grid{gap:1px;}
-  .sch-cell{min-height:0;height:calc((100vw - 24px) / 7);padding:3px;border-radius:5px;font-size:9px;}
+  .sch-cell{min-height:0;height:52px;padding:3px 2px;border-radius:5px;font-size:9px;overflow:hidden;}
   .sch-cell.empty{visibility:hidden;}
   .sch-date-num{font-size:11px;}
   .sch-event{font-size:8px;padding:1px 3px;border-radius:3px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
@@ -192,7 +192,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .bnav-icon{font-size:19px;}
 
 /* カード共通 */
-.task-item,.habit-item,.ent-item,.repeat-item{transition:background var(--tr);padding:8px 12px;}
+.task-item,.habit-item,.ent-item,.repeat-item{transition:background var(--tr);padding:7px 10px;}
 .task-item:hover,.habit-item:hover,.ent-item:hover{background:var(--al);}
 
 /* 日記ページ */
@@ -228,8 +228,10 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .due-right-title{font-size:11px;letter-spacing:.07em;color:var(--muted);text-transform:uppercase;margin-bottom:8px;padding-left:2px;}
 .due-right-scroll{flex:1;overflow-y:auto;max-height:calc(100vh - 280px);}
 @media(max-width:768px){
-  .due-layout{grid-template-columns:160px 1fr;gap:8px;}
-  .due-right-scroll{max-height:calc(100vh - 340px);overflow-y:auto;}
+  .due-layout{grid-template-columns:1fr;gap:8px;}
+  .due-cal-wrap{padding:8px;}
+  .due-cal-num{font-size:11px;}
+  .due-right-scroll{max-height:200px;overflow-y:auto;}
 }
 
 /* ── Mobile layout ── */
