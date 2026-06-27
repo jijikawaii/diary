@@ -420,10 +420,10 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
       </div>
       <div class="sync-ind"><div class="sync-dot"></div>同期中</div>
       <div class="nav-tabs">
+        <button class="nav-tab active" id="navMemo"  onclick="switchPage('memo')">📌 メモ</button>
         <button class="nav-tab" id="navSched" onclick="switchPage('sched')">📅 予定</button>
-        <button class="nav-tab active" id="navDiary" onclick="switchPage('diary')">📝 日記</button>
-        <button class="nav-tab"        id="navTodo"  onclick="switchPage('todo')">☑ TODO</button>
-        <button class="nav-tab"        id="navMemo"  onclick="switchPage('memo')">📌 メモ</button>
+        <button class="nav-tab" id="navDiary" onclick="switchPage('diary')">📝 日記</button>
+        <button class="nav-tab" id="navTodo"  onclick="switchPage('todo')">☑ TODO</button>
       </div>
     </div>
     <div class="cal-wrap" id="calWrap">
@@ -469,7 +469,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
     </div>
 
     <!-- Diary -->
-    <div class="page active" id="pageDiary">
+    <div class="page" id="pageDiary">
       <div class="no-day" id="noDaySel"><div class="ei">📅</div><p>日付を選んでください</p></div>
       <div class="diary-main" id="diaryMain" style="display:none">
         <div class="diary-date-title" id="mainDateTitle"></div>
@@ -611,7 +611,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
     </div>
 
     <!-- Memo -->
-    <div class="page" id="pageMemo">
+    <div class="page active" id="pageMemo">
       <div class="memo-page">
         <div class="memo-header">
           <div class="memo-title">メモ</div>
@@ -626,10 +626,10 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 
   <!-- Bottom nav (mobile) -->
   <nav class="bottom-nav">
+    <button class="bnav-btn active" id="bnavMemo"  onclick="switchPage('memo')"><span class="bnav-icon">📌</span>メモ</button>
     <button class="bnav-btn" id="bnavSched" onclick="switchPage('sched')"><span class="bnav-icon">📅</span>予定</button>
-    <button class="bnav-btn active" id="bnavDiary" onclick="switchPage('diary')"><span class="bnav-icon">📝</span>日記</button>
-    <button class="bnav-btn"        id="bnavTodo"  onclick="switchPage('todo')"><span class="bnav-icon">☑</span>TODO</button>
-    <button class="bnav-btn"        id="bnavMemo"  onclick="switchPage('memo')"><span class="bnav-icon">📌</span>メモ</button>
+    <button class="bnav-btn" id="bnavDiary" onclick="switchPage('diary')"><span class="bnav-icon">📝</span>日記</button>
+    <button class="bnav-btn" id="bnavTodo"  onclick="switchPage('todo')"><span class="bnav-icon">☑</span>TODO</button>
   </nav>
 
 </div>
@@ -784,6 +784,7 @@ const fbc = {
 };
 firebase.initializeApp(fbc);
 const auth=firebase.auth(), db=firebase.firestore(), gp=new firebase.auth.GoogleAuthProvider();
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 let uid=null, unsubs=[];
 
 auth.onAuthStateChanged(user=>{
@@ -794,7 +795,7 @@ auth.onAuthStateChanged(user=>{
     document.getElementById('uAvatar').src=user.photoURL||'';
     document.getElementById('uName').textContent=user.displayName||user.email;
     const ma=document.getElementById('mAvatar');if(ma)ma.src=user.photoURL||'';
-    startListeners(); initCal(); initSch(); renderMoodRow(); selectDate(todayDs());
+    startListeners(); initCal(); initSch(); renderMoodRow(); switchPage('memo');
   } else {
     uid=null; stopListeners();
     document.getElementById('loginScreen').style.display='flex';
@@ -829,7 +830,7 @@ async function fsHL(v){await col('hlog').doc('data').set({value:v});}
 let posts=[],habits=[],hlog={},tasks=[],assigns=[],ents=[],memos=[],repeatAssigns=[];
 const MOODS=['😊','😌','😢','😤','😴','🤩'];
 const ENT_CATS=['すべて','映画','ゲーム','本','アニメ','音楽','その他'];
-let calYear,calMonth,selDate=null,selMood='',curPage='diary',curTab='task';
+let calYear,calMonth,selDate=null,selMood='',curPage='memo',curTab='task';
 let entFilter='すべて',memoTagF='すべて',editMemoId=null,pendingImg=null;
 let dueCalYear,dueCalMonth,dueModalType=null,dueModalDate=null;
 
