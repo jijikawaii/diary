@@ -73,6 +73,35 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 
 
 
+
+/* ── Chat memo ── */
+.memo-page{flex:1;display:flex;flex-direction:column;overflow:hidden;height:100%;}
+.memo-chat-header{display:flex;align-items:center;gap:10px;padding:14px 20px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.memo-chat-title{font-family:'Noto Serif JP',serif;font-size:18px;font-weight:600;flex:1;}
+.chat-tag-filter{display:flex;gap:6px;overflow-x:auto;padding:8px 16px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.chat-tag-filter::-webkit-scrollbar{height:0;}
+.chat-messages{flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:8px;}
+.chat-bubble{max-width:75%;align-self:flex-end;background:var(--accent);color:var(--bg);border-radius:18px 18px 4px 18px;padding:10px 14px;font-size:14px;line-height:1.6;word-break:break-word;white-space:pre-wrap;position:relative;}
+.chat-bubble img{max-width:100%;border-radius:10px;display:block;margin-top:6px;}
+.chat-bubble-time{font-size:10px;opacity:.65;margin-top:4px;text-align:right;}
+.chat-bubble-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px;}
+.chat-bubble-tag{font-size:10px;background:rgba(0,0,0,.2);border-radius:4px;padding:1px 6px;}
+.chat-bubble-del{position:absolute;top:6px;right:-28px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;opacity:0;transition:opacity var(--tr);}
+.chat-bubble:hover .chat-bubble-del{opacity:1;}
+.chat-date-sep{text-align:center;font-size:11px;color:var(--muted);margin:8px 0;position:relative;}
+.chat-date-sep::before{content:'';position:absolute;left:0;right:0;top:50%;height:1px;background:var(--border);z-index:0;}
+.chat-date-sep span{background:var(--bg);padding:0 10px;position:relative;z-index:1;}
+.chat-input-bar{display:flex;align-items:flex-end;gap:8px;padding:10px 16px;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0;}
+.chat-input-bar textarea{flex:1;border:1px solid var(--border);border-radius:20px;padding:9px 16px;font-family:inherit;font-size:14px;color:var(--text);background:var(--bg);outline:none;resize:none;max-height:120px;min-height:40px;line-height:1.5;transition:border-color var(--tr);}
+.chat-input-bar textarea:focus{border-color:var(--accent);}
+.chat-send-btn{width:40px;height:40px;border-radius:50%;background:var(--accent);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:opacity var(--tr);}
+.chat-send-btn:hover{opacity:.85;}
+.chat-send-btn svg{width:18px;height:18px;fill:var(--bg);}
+.chat-img-btn{width:36px;height:36px;border-radius:50%;background:none;border:1px solid var(--border);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all var(--tr);}
+.chat-img-btn:hover{border-color:var(--accent);}
+.chat-tag-inp{font-size:12px;border:1px solid var(--border);border-radius:12px;padding:6px 10px;background:var(--bg);color:var(--muted);outline:none;width:70px;}
+@media(max-width:768px){.chat-bubble{max-width:88%;}.chat-messages{padding:10px 12px;}.chat-input-bar{padding:8px 10px;}}
+
 /* ── Repeat assign ── */
 .repeat-section{margin-top:20px;border-top:1px solid var(--border);padding-top:16px;}
 .repeat-title{font-size:11px;letter-spacing:.07em;color:var(--muted);text-transform:uppercase;margin-bottom:10px;}
@@ -613,12 +642,20 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
     <!-- Memo -->
     <div class="page active" id="pageMemo">
       <div class="memo-page">
-        <div class="memo-header">
-          <div class="memo-title">メモ</div>
-          <button class="btn-new-memo" onclick="openMemoModal(null)">＋ 新規</button>
+        <div class="memo-chat-header">
+          <div class="memo-chat-title">📌 メモ</div>
         </div>
-        <div class="filter-row" id="memoTagFilter"></div>
-        <div class="memo-grid" id="memoGrid"></div>
+        <div class="chat-tag-filter" id="chatTagFilter"></div>
+        <div class="chat-messages" id="chatMessages"></div>
+        <div class="chat-input-bar">
+          <button class="chat-img-btn" onclick="document.getElementById('chatImgFile').click()">📷</button>
+          <input type="file" id="chatImgFile" accept="image/*" style="display:none" onchange="onChatImg(event)">
+          <textarea id="chatInput" placeholder="メモを送る…" rows="1" oninput="autoResizeChat(this)" onkeydown="if((event.metaKey||event.ctrlKey)&&event.key==='Enter'){event.preventDefault();sendChatMemo();}"></textarea>
+          <input class="chat-tag-inp" id="chatTagInp" type="text" placeholder="#タグ">
+          <button class="chat-send-btn" onclick="sendChatMemo()">
+            <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -1460,25 +1497,77 @@ async function toggleEnt(id){const e=ents.find(e=>e.id===id);if(e)await fsSet('e
 async function delEnt(id){if(!confirm('この娯楽を削除しますか？'))return;await fsDel('ents',id);}
 
 // ── Memos ──
-function renderMemos(){
-  const allTags=new Set();memos.forEach(m=>(m.tags||[]).forEach(t=>allTags.add(t)));
-  const tf=document.getElementById('memoTagFilter');if(!tf)return;
-  tf.innerHTML=[`<button class="fbtn ${memoTagF==='すべて'?'active':''}" onclick="setMemoTag('すべて')">すべて</button>`,
-    ...[...allTags].map(t=>`<button class="fbtn ${memoTagF===t?'active':''}" onclick="setMemoTag('${esc(t)}')">${esc(t)}</button>`)
-  ].join('');
-  let list=memoTagF==='すべて'?[...memos]:memos.filter(m=>(m.tags||[]).includes(memoTagF));
-  list.sort((a,b)=>b.createdAt-a.createdAt);
-  const grid=document.getElementById('memoGrid');
-  if(!list.length){grid.innerHTML='<div style="text-align:center;color:var(--muted);padding:22px 0;font-size:13px;grid-column:1/-1;">メモはありません</div>';return;}
-  grid.innerHTML=list.map(m=>`<div class="memo-card" onclick="openMemoModal('${m.id}')">
-    <div class="memo-card-head">${m.title?`<div class="memo-card-tit">${esc(m.title)}</div>`:'<div style="flex:1"></div>'}<button class="mc-del" onclick="event.stopPropagation();delMemo('${m.id}')">×</button></div>
-    ${m.imgBase64?`<img class="mc-img" src="${m.imgBase64}" alt="">`:''}
-    ${m.body?`<div class="mc-body">${esc(m.body)}</div>`:''}
-    ${(m.tags||[]).length?`<div class="mc-tags">${m.tags.map(t=>`<span class="mc-tag">${esc(t)}</span>`).join('')}</div>`:''}
-    <div class="mc-date">${m.date||''}</div>
-  </div>`).join('');
+
+// ── Chat Memo ──
+let chatImgData = null;
+
+function renderMemos() {
+  const el = document.getElementById('chatMessages'); if (!el) return;
+  const allTags = new Set();
+  memos.forEach(m => (m.tags || []).forEach(t => allTags.add(t)));
+  const tf = document.getElementById('chatTagFilter');
+  if (tf) {
+    tf.innerHTML = ['すべて', ...allTags].map(t =>
+      '<button class="tag-chip ' + (memoTagF === t ? 'active' : '') + '" onclick="setMemoTag('' + esc(t) + '')">' + (t === 'すべて' ? 'すべて' : '#' + esc(t)) + '</button>'
+    ).join('');
+  }
+  let list = [...memos].sort((a, b) => a.createdAt - b.createdAt);
+  if (memoTagF && memoTagF !== 'すべて') list = list.filter(m => (m.tags || []).includes(memoTagF));
+  if (!list.length) { el.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;margin-top:40px;">メモはまだありません</div>'; return; }
+
+  let lastDate = '';
+  let out = '';
+  list.forEach(m => {
+    const d = new Date(m.createdAt);
+    const ds = d.getFullYear() + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + String(d.getDate()).padStart(2,'0');
+    if (ds !== lastDate) { out += '<div class="chat-date-sep"><span>' + ds + '</span></div>'; lastDate = ds; }
+    const timeStr = String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+    const tagsHtml = (m.tags||[]).length ? '<div class="chat-bubble-tags">' + (m.tags||[]).map(t => '<span class="chat-bubble-tag">#' + esc(t) + '</span>').join('') + '</div>' : '';
+    const imgHtml = m.img ? '<img src="' + m.img + '" alt="">' : '';
+    const bodyHtml = m.body ? esc(m.body) : '';
+    out += '<div class="chat-bubble">' +
+      '<button class="chat-bubble-del" onclick="delChatMemo('' + m.id + '')">×</button>' +
+      bodyHtml + imgHtml + tagsHtml +
+      '<div class="chat-bubble-time">' + timeStr + '</div>' +
+      '</div>';
+  });
+  el.innerHTML = out;
+  el.scrollTop = el.scrollHeight;
 }
-function setMemoTag(t){memoTagF=t;renderMemos();}
+
+function onChatImg(e) {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => { chatImgData = ev.target.result; showToast('画像を選択しました'); };
+  reader.readAsDataURL(file);
+}
+
+async function sendChatMemo() {
+  const text = document.getElementById('chatInput').value.trim();
+  const tagRaw = document.getElementById('chatTagInp').value;
+  const tags = tagRaw.split(',').map(t => t.replace(/^#/, '').trim()).filter(Boolean);
+  if (!text && !chatImgData) return;
+  const id = genId();
+  await col('memos').doc(id).set({ id, body: text, tags, img: chatImgData || '', createdAt: Date.now() });
+  document.getElementById('chatInput').value = '';
+  document.getElementById('chatInput').style.height = '40px';
+  document.getElementById('chatTagInp').value = '';
+  document.getElementById('chatImgFile').value = '';
+  chatImgData = null;
+}
+
+async function delChatMemo(id) {
+  if (!confirm('このメモを削除しますか？')) return;
+  await col('memos').doc(id).delete();
+}
+
+function autoResizeChat(el) {
+  el.style.height = '40px';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+function setMemoTag(t) { memoTagF = t; renderMemos(); }
+
 function openMemoModal(id){
   editMemoId=id||null;pendingImg=null;
   document.getElementById('mModalTitle').textContent=id?'メモを編集':'新しいメモ';
