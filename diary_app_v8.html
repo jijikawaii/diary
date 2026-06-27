@@ -170,6 +170,49 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
   .sch-grid-wrap{padding:0 8px 80px;}
 }
 
+
+/* ── Polish ── */
+/* 共通ページヘッダー */
+.page-header{display:flex;align-items:center;gap:12px;padding:16px 24px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.page-header-title{font-family:'Noto Serif JP',serif;font-size:18px;font-weight:600;color:var(--text);flex:1;}
+
+/* サイドバー幅・タブ改善 */
+.nav-tab{font-size:11px;padding:6px 4px;letter-spacing:.02em;}
+
+/* ボトムナビ改善 */
+.bnav-btn{font-size:10px;}
+.bnav-icon{font-size:19px;}
+
+/* カード共通 */
+.task-item,.habit-item,.ent-item,.repeat-item{transition:background var(--tr);}
+.task-item:hover,.habit-item:hover,.ent-item:hover{background:var(--al);}
+
+/* 日記ページ */
+.diary-main{gap:0;}
+.post-card{border-radius:12px;transition:box-shadow var(--tr);}
+.post-card:hover{box-shadow:0 2px 12px rgba(0,0,0,.15);}
+.composer{border-radius:12px;margin-top:12px;}
+
+/* TODO ページ */
+.stabs{padding-bottom:0;}
+.stab{font-size:12px;padding:8px 14px;}
+.add-row{margin-bottom:12px;}
+.add-input{border-radius:10px;}
+.btn-add{border-radius:10px;}
+
+/* 予定ページ */
+.sch-cell{border-radius:10px;min-height:90px;}
+.sch-event{border-radius:5px;}
+
+/* メモページ */
+.chat-bubble{box-shadow:0 1px 4px rgba(0,0,0,.15);}
+.chat-input-bar{border-radius:0;}
+.chat-input-bar textarea{border-radius:16px;}
+
+/* スクロールバー */
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+
 /* ── Due 2-column layout ── */
 .due-layout{display:grid;grid-template-columns:240px 1fr;gap:20px;margin-bottom:16px;}
 .due-layout .due-cal-wrap{margin-bottom:0;}
@@ -450,9 +493,9 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
       <div class="sync-ind"><div class="sync-dot"></div>同期中</div>
       <div class="nav-tabs">
         <button class="nav-tab active" id="navMemo"  onclick="switchPage('memo')">📌 メモ</button>
+        <button class="nav-tab" id="navTodo"  onclick="switchPage('todo')">☑ TODO</button>
         <button class="nav-tab" id="navSched" onclick="switchPage('sched')">📅 予定</button>
         <button class="nav-tab" id="navDiary" onclick="switchPage('diary')">📝 日記</button>
-        <button class="nav-tab" id="navTodo"  onclick="switchPage('todo')">☑ TODO</button>
       </div>
     </div>
     <div class="cal-wrap" id="calWrap">
@@ -664,9 +707,9 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
   <!-- Bottom nav (mobile) -->
   <nav class="bottom-nav">
     <button class="bnav-btn active" id="bnavMemo"  onclick="switchPage('memo')"><span class="bnav-icon">📌</span>メモ</button>
+    <button class="bnav-btn" id="bnavTodo"  onclick="switchPage('todo')"><span class="bnav-icon">☑</span>TODO</button>
     <button class="bnav-btn" id="bnavSched" onclick="switchPage('sched')"><span class="bnav-icon">📅</span>予定</button>
     <button class="bnav-btn" id="bnavDiary" onclick="switchPage('diary')"><span class="bnav-icon">📝</span>日記</button>
-    <button class="bnav-btn" id="bnavTodo"  onclick="switchPage('todo')"><span class="bnav-icon">☑</span>TODO</button>
   </nav>
 
 </div>
@@ -883,7 +926,7 @@ function cap(s){return s[0].toUpperCase()+s.slice(1);}
 // ── Page / Tab switch ──
 function switchPage(page){
   curPage=page;
-  ['sched','diary','todo','memo'].forEach(p=>{
+  ['memo','todo','sched','diary'].forEach(p=>{
     const pe=document.getElementById('page'+cap(p));if(pe)pe.classList.toggle('active',p===page);
     const ne=document.getElementById('nav'+cap(p));if(ne)ne.classList.toggle('active',p===page);
     const be=document.getElementById('bnav'+cap(p));if(be)be.classList.toggle('active',p===page);
