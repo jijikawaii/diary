@@ -31,19 +31,19 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 
 
 /* ── Due Calendar ── */
-.due-cal-wrap{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:16px;}
+.due-cal-wrap{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:12px;}
 .due-cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
 .due-cal-title{font-size:13px;font-weight:600;font-family:'Noto Serif JP',serif;}
 .due-cal-nav{background:none;border:none;cursor:pointer;color:var(--muted);padding:2px 6px;border-radius:5px;font-size:15px;transition:color var(--tr),background var(--tr);}
 .due-cal-nav:hover{color:var(--accent);background:var(--accent-light);}
 .due-cal-grid{display:grid !important;grid-template-columns:repeat(7,1fr) !important;gap:2px;}
 .due-cal-label{text-align:center;font-size:10px;color:var(--muted);padding:2px 0;}
-.due-cal-cell{display:flex;flex-direction:column;align-items:center;border-radius:6px;cursor:pointer;padding:4px 2px;transition:background var(--tr);border:1px solid transparent;}
+.due-cal-cell{display:flex;flex-direction:column;align-items:center;border-radius:5px;cursor:pointer;padding:3px 1px;transition:background var(--tr);border:1px solid transparent;}
 .due-cal-cell:hover:not(.empty){background:var(--accent-light);}
 .due-cal-cell.empty{cursor:default;pointer-events:none;visibility:hidden;}
 .due-cal-cell.today{border-color:var(--today);}
 .due-cal-cell.selected{background:var(--accent-light);border-color:var(--accent);}
-.due-cal-num{font-size:12px;color:var(--text);line-height:1.3;}
+.due-cal-num{font-size:11px;color:var(--text);line-height:1.2;}
 .due-cal-cell.today .due-cal-num{color:var(--today);font-weight:700;}
 .due-cal-cell.selected .due-cal-num{color:var(--accent);font-weight:700;}
 .due-cal-badge{font-size:9px;font-weight:700;min-height:12px;line-height:1.2;color:transparent;}
@@ -164,10 +164,18 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .sch-event-edit:hover{color:var(--accent);}
 
 @media(max-width:768px){
-  .sch-cell{min-height:60px;padding:4px;}
-  .sch-event{font-size:9px;padding:1px 3px;}
-  .schedule-header{padding:12px 16px 10px;}
-  .sch-grid-wrap{padding:0 8px 80px;}
+  .sch-grid{gap:1px;}
+  .sch-cell{min-height:0;height:calc((100vw - 24px) / 7);padding:3px;border-radius:5px;font-size:9px;}
+  .sch-cell.empty{visibility:hidden;}
+  .sch-date-num{font-size:11px;}
+  .sch-event{font-size:8px;padding:1px 3px;border-radius:3px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
+  .sch-more{font-size:8px;}
+  .schedule-header{padding:10px 12px;}
+  .schedule-header .btn-add{padding:5px 10px;font-size:11px;}
+  .sch-today-btn{padding:4px 10px;font-size:11px;}
+  .sch-grid-wrap{padding:0 6px 80px;}
+  .sch-day-labels{padding:4px 0 2px;}
+  .sch-day-label{font-size:10px;}
 }
 
 
@@ -184,7 +192,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .bnav-icon{font-size:19px;}
 
 /* カード共通 */
-.task-item,.habit-item,.ent-item,.repeat-item{transition:background var(--tr);}
+.task-item,.habit-item,.ent-item,.repeat-item{transition:background var(--tr);padding:8px 12px;}
 .task-item:hover,.habit-item:hover,.ent-item:hover{background:var(--al);}
 
 /* 日記ページ */
@@ -195,13 +203,13 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 
 /* TODO ページ */
 .stabs{padding-bottom:0;}
-.stab{font-size:12px;padding:8px 14px;}
-.add-row{margin-bottom:12px;}
+.stab{font-size:12px;padding:6px 12px;}
+.add-row{margin-bottom:8px;}
 .add-input{border-radius:10px;}
 .btn-add{border-radius:10px;}
 
 /* 予定ページ */
-.sch-cell{border-radius:10px;min-height:90px;}
+.sch-cell{border-radius:8px;min-height:90px;}
 .sch-event{border-radius:5px;}
 
 /* メモページ */
@@ -220,8 +228,8 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .due-right-title{font-size:11px;letter-spacing:.07em;color:var(--muted);text-transform:uppercase;margin-bottom:8px;padding-left:2px;}
 .due-right-scroll{flex:1;overflow-y:auto;max-height:calc(100vh - 280px);}
 @media(max-width:768px){
-  .due-layout{grid-template-columns:1fr;}
-  .due-right-scroll{max-height:none;}
+  .due-layout{grid-template-columns:160px 1fr;gap:8px;}
+  .due-right-scroll{max-height:calc(100vh - 340px);overflow-y:auto;}
 }
 
 /* ── Mobile layout ── */
@@ -243,7 +251,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
   .post-card-body{font-size:14px;}
   .composer{padding:11px 12px;margin-top:7px;}
   .composer textarea{font-size:14px;min-height:52px;}
-  .todo-page{padding:12px 14px;width:100%;}
+  .todo-page{padding:8px 12px;width:100%;}
   .todo-page-title{font-size:16px;margin-bottom:12px;}
   .memo-page{padding:12px 14px;width:100%;}
   .memo-grid{grid-template-columns:1fr!important;}
@@ -334,7 +342,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .btn-post:disabled{opacity:.35;cursor:default;}
 
 /* TODO */
-.todo-page{flex:1;overflow-y:auto;padding:26px 42px;width:100%;}
+.todo-page{flex:1;overflow-y:auto;padding:16px 28px;width:100%;}
 .todo-page-title{font-family:'Noto Serif JP',serif;font-size:19px;font-weight:600;margin-bottom:16px;}
 .stabs{display:flex;gap:0;margin-bottom:14px;border-bottom:1px solid var(--border);overflow-x:auto;}
 .stab{padding:7px 14px;background:none;border:none;font-family:inherit;font-size:13px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all var(--tr);white-space:nowrap;}
