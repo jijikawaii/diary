@@ -1507,26 +1507,36 @@ function renderMemos() {
   memos.forEach(m => (m.tags || []).forEach(t => allTags.add(t)));
   const tf = document.getElementById('chatTagFilter');
   if (tf) {
-    tf.innerHTML = ['すべて', ...allTags].map(t =>
-      '<button class="tag-chip ' + (memoTagF === t ? 'active' : '') + '" onclick="setMemoTag('' + esc(t) + '')">' + (t === 'すべて' ? 'すべて' : '#' + esc(t)) + '</button>'
-    ).join('');
+    const chips = ['すべて', ...allTags].map(t => {
+      const active = memoTagF === t ? 'active' : '';
+      const label = t === 'すべて' ? 'すべて' : '#' + esc(t);
+      return '<button class="tag-chip ' + active + '" onclick="setMemoTag(\'' + esc(t) + '\')">' + label + '</button>';
+    });
+    tf.innerHTML = chips.join('');
   }
   let list = [...memos].sort((a, b) => a.createdAt - b.createdAt);
   if (memoTagF && memoTagF !== 'すべて') list = list.filter(m => (m.tags || []).includes(memoTagF));
-  if (!list.length) { el.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;margin-top:40px;">メモはまだありません</div>'; return; }
-
+  if (!list.length) {
+    el.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;margin-top:40px;">メモはまだありません</div>';
+    return;
+  }
   let lastDate = '';
   let out = '';
   list.forEach(m => {
     const d = new Date(m.createdAt);
     const ds = d.getFullYear() + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + String(d.getDate()).padStart(2,'0');
-    if (ds !== lastDate) { out += '<div class="chat-date-sep"><span>' + ds + '</span></div>'; lastDate = ds; }
+    if (ds !== lastDate) {
+      out += '<div class="chat-date-sep"><span>' + ds + '</span></div>';
+      lastDate = ds;
+    }
     const timeStr = String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
-    const tagsHtml = (m.tags||[]).length ? '<div class="chat-bubble-tags">' + (m.tags||[]).map(t => '<span class="chat-bubble-tag">#' + esc(t) + '</span>').join('') + '</div>' : '';
+    const tagsHtml = (m.tags||[]).length
+      ? '<div class="chat-bubble-tags">' + (m.tags||[]).map(t => '<span class="chat-bubble-tag">#' + esc(t) + '</span>').join('') + '</div>'
+      : '';
     const imgHtml = m.img ? '<img src="' + m.img + '" alt="">' : '';
     const bodyHtml = m.body ? esc(m.body) : '';
     out += '<div class="chat-bubble">' +
-      '<button class="chat-bubble-del" onclick="delChatMemo('' + m.id + '')">×</button>' +
+      '<button class="chat-bubble-del" onclick="delChatMemo(\'' + m.id + '\')" style="position:absolute;top:4px;right:-26px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;">×</button>' +
       bodyHtml + imgHtml + tagsHtml +
       '<div class="chat-bubble-time">' + timeStr + '</div>' +
       '</div>';
@@ -1534,6 +1544,7 @@ function renderMemos() {
   el.innerHTML = out;
   el.scrollTop = el.scrollHeight;
 }
+
 
 function onChatImg(e) {
   const file = e.target.files[0]; if (!file) return;
